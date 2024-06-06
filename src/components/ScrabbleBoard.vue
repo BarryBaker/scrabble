@@ -1,4 +1,8 @@
 <template>
+  <div class="player top-player" v-if="topPlayer">{{ topPlayer }}</div>
+  <div class="player right-player" v-if="rightPlayer">{{ rightPlayer }}</div>
+  <div class="player left-player" v-if="leftPlayer">{{ leftPlayer }}</div>
+
   <div class="board">
     <div v-for="(row, rowIndex) in board" :key="rowIndex" class="row">
       <div
@@ -10,11 +14,13 @@
       </div>
     </div>
   </div>
+  <div class="player bottom-player">{{ currentPlayer }}</div>
 </template>
 
 <script>
   export default {
     name: "ScrabbleBoard",
+    props: ["players", "currentPlayer"],
     data() {
       return {
         board: [
@@ -276,6 +282,20 @@
         ],
       };
     },
+    computed: {
+      currentPlayerIndex() {
+        return this.players.indexOf(this.currentPlayer);
+      },
+      topPlayer() {
+        return this.players[(this.currentPlayerIndex + 1) % 4];
+      },
+      leftPlayer() {
+        return this.players[(this.currentPlayerIndex + 3) % 4];
+      },
+      rightPlayer() {
+        return this.players[(this.currentPlayerIndex + 2) % 4];
+      },
+    },
     methods: {
       getCellText(cell) {
         switch (cell) {
@@ -296,6 +316,34 @@
 </script>
 
 <style scoped>
+  .board-container {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+    justify-items: center;
+  }
+  .player {
+    font-size: 14px;
+    font-weight: bold;
+  }
+  .top-player {
+    grid-row: 1;
+    grid-column: 2;
+  }
+  .left-player {
+    grid-row: 2;
+    grid-column: 1;
+  }
+  .right-player {
+    grid-row: 2;
+    grid-column: 3;
+  }
+  .bottom-player {
+    grid-row: 3;
+    grid-column: 2;
+  }
   .board {
     display: grid;
     grid-template-columns: repeat(15, 1fr);
@@ -336,5 +384,9 @@
 
   .double-letter {
     background-color: rgb(196, 224, 233);
+  }
+  .middle-row {
+    display: flex;
+    flex-direction: row;
   }
 </style>
