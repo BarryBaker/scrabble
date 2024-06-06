@@ -315,26 +315,26 @@
     justify-content: center;
     align-items: center;
     border: 1px solid #ddd;
-    background-color: #85ad82;
+    background-color: #89cd8b;
     text-align: center;
     font-size: 10px;
   }
 
   .triple-word {
-    background-color: red;
+    background-color: rgb(252, 63, 63);
     color: white;
   }
 
   .double-word {
-    background-color: yellow;
+    background-color: rgb(255, 255, 163);
   }
 
   .triple-letter {
-    background-color: rgb(79, 79, 209);
+    background-color: rgb(126, 126, 255);
     color: white;
   }
 
   .double-letter {
-    background-color: lightblue;
+    background-color: rgb(196, 224, 233);
   }
 </style>

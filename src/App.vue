@@ -1,12 +1,12 @@
 <template>
   <div id="app">
-    <ScrabbleBoard />
     <div v-if="!joined">
       <input v-model="name" placeholder="Enter your name" />
       <button @click="joinGame">Join Game</button>
       <p v-if="errorMessage">{{ errorMessage }}</p>
     </div>
     <div v-else>
+      <ScrabbleBoard />
       <p>Players:</p>
       <ul>
         <li v-for="player in players" :key="player">{{ player }}</li>
@@ -20,10 +20,6 @@
   import ScrabbleBoard from "./components/ScrabbleBoard.vue";
 
   export default {
-    name: "App",
-    components: {
-      ScrabbleBoard,
-    },
     data() {
       return {
         name: "",
@@ -32,6 +28,9 @@
         gameStarted: false,
         errorMessage: "",
       };
+    },
+    components: {
+      ScrabbleBoard,
     },
     methods: {
       joinGame() {
