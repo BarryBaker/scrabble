@@ -20,6 +20,11 @@
         <li v-for="player in players" :key="player">{{ player }}</li>
       </ul> -->
       <p v-if="gameStarted">Game started!</p>
+      <p v-if="gameStarted && isActivePlayer">It's your turn!</p>
+      <p v-if="gameStarted && !isActivePlayer">
+        Waiting for {{ currentTurnPlayer }}'s turn...
+      </p>
+
       <div v-if="gameStarted" class="letters">
         <h3>Your Letters:</h3>
         <div class="letter-row">
@@ -31,6 +36,7 @@
           />
         </div>
       </div>
+      <button v-if="isActivePlayer" @click="passTurn">Pass Turn</button>
     </div>
   </div>
 </template>
@@ -50,11 +56,17 @@
         requiredPlayers: 2, // default value
         socket: null,
         letters: [],
+        currentTurnPlayer: "",
       };
     },
     components: {
       ScrabbleBoard,
       LetterTile,
+    },
+    computed: {
+      isActivePlayer() {
+        return this.currentTurnPlayer === this.name;
+      },
     },
     methods: {
       joinGame() {
@@ -70,6 +82,18 @@
           message.requiredPlayers = this.requiredPlayers;
         }
         this.socket.send(JSON.stringify(message));
+      },
+      passTurn() {
+        const currentIndex = this.players.indexOf(this.currentTurnPlayer);
+        const nextIndex = (currentIndex + 1) % this.players.length;
+        const nextPlayer = this.players[nextIndex];
+
+        this.socket.send(
+          JSON.stringify({
+            type: "turn",
+            player: nextPlayer,
+          })
+        );
       },
     },
     sockets: {
@@ -93,7 +117,9 @@
             this.letters = data.letters;
 
             break;
-
+          case "turn":
+            this.currentTurnPlayer = data.player;
+            break;
           case "player-left":
             this.players = this.players.filter(
               (player) => player !== data.name

@@ -8,6 +8,7 @@
 <script>
   export default {
     name: "LetterTile",
+
     props: {
       letter: {
         type: String,
@@ -18,6 +19,15 @@
         required: true,
       },
     },
+    computed: {
+      letterData() {
+        return {
+          letter: this.letter,
+          points: this.points,
+        };
+      },
+    },
+    methods: {},
   };
 </script>
 

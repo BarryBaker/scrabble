@@ -14,13 +14,19 @@
       </div>
     </div>
   </div>
+
   <div class="player bottom-player">{{ currentPlayer }}</div>
 </template>
 
 <script>
   export default {
     name: "ScrabbleBoard",
-    props: ["players", "currentPlayer"],
+
+    props: {
+      players: Array,
+      currentPlayer: String,
+      isActivePlayer: Boolean,
+    },
     data() {
       return {
         board: [
@@ -283,6 +289,13 @@
       };
     },
     computed: {
+      boardData() {
+        return {
+          players: this.players,
+          currentPlayer: this.currentPlayer,
+          isActivePlayer: this.isActivePlayer,
+        };
+      },
       currentPlayerIndex() {
         return this.players.indexOf(this.currentPlayer);
       },
