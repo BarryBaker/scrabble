@@ -8,9 +8,17 @@
       <div
         v-for="(cell, colIndex) in row"
         :key="colIndex"
-        :class="['cell', cell]"
+        :class="['cell', cell.text]"
+        @dragover.prevent
+        @drop="handleDrop($event, rowIndex, colIndex)"
       >
-        {{ getCellText(cell) }}
+        <!-- {{ getCellText(cell) }} -->
+        <LetterTile
+          v-if="cell.letter"
+          :letter="cell.letter"
+          :points="cell.points"
+        />
+        <span v-else>{{ getCellText(cell.text) }}</span>
       </div>
     </div>
   </div>
@@ -19,273 +27,24 @@
 </template>
 
 <script>
-  export default {
-    name: "ScrabbleBoard",
+  import LetterTile from "./LetterTile.vue";
 
+  export default {
+    // name: "ScrabbleBoard"},
+    components: {
+      LetterTile,
+    },
     props: {
       players: Array,
       currentPlayer: String,
       isActivePlayer: Boolean,
+      board: Array,
     },
     data() {
       return {
-        board: [
-          [
-            "triple-word",
-            "",
-            "",
-            "double-letter",
-            "",
-            "",
-            "",
-            "triple-word",
-            "",
-            "",
-            "",
-            "double-letter",
-            "",
-            "",
-            "triple-word",
-          ],
-          [
-            "",
-            "double-word",
-            "",
-            "",
-            "",
-            "triple-letter",
-            "",
-            "",
-            "",
-            "triple-letter",
-            "",
-            "",
-            "",
-            "double-word",
-            "",
-          ],
-          [
-            "",
-            "",
-            "double-word",
-            "",
-            "",
-            "",
-            "double-letter",
-            "",
-            "double-letter",
-            "",
-            "",
-            "",
-            "double-word",
-            "",
-            "",
-          ],
-          [
-            "double-letter",
-            "",
-            "",
-            "double-word",
-            "",
-            "",
-            "",
-            "double-letter",
-            "",
-            "",
-            "",
-            "double-word",
-            "",
-            "",
-            "double-letter",
-          ],
-          [
-            "",
-            "",
-            "",
-            "",
-            "double-word",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "double-word",
-            "",
-            "",
-            "",
-            "",
-          ],
-          [
-            "",
-            "triple-letter",
-            "",
-            "",
-            "",
-            "triple-letter",
-            "",
-            "",
-            "",
-            "triple-letter",
-            "",
-            "",
-            "",
-            "triple-letter",
-            "",
-          ],
-          [
-            "",
-            "",
-            "double-letter",
-            "",
-            "",
-            "",
-            "double-letter",
-            "",
-            "double-letter",
-            "",
-            "",
-            "",
-            "double-letter",
-            "",
-            "",
-          ],
-          [
-            "triple-word",
-            "",
-            "",
-            "double-letter",
-            "",
-            "",
-            "",
-            "double-word",
-            "",
-            "",
-            "",
-            "double-letter",
-            "",
-            "",
-            "triple-word",
-          ],
-          [
-            "",
-            "",
-            "double-letter",
-            "",
-            "",
-            "",
-            "double-letter",
-            "",
-            "double-letter",
-            "",
-            "",
-            "",
-            "double-letter",
-            "",
-            "",
-          ],
-          [
-            "",
-            "triple-letter",
-            "",
-            "",
-            "",
-            "triple-letter",
-            "",
-            "",
-            "",
-            "triple-letter",
-            "",
-            "",
-            "",
-            "triple-letter",
-            "",
-          ],
-          [
-            "",
-            "",
-            "",
-            "",
-            "double-word",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "double-word",
-            "",
-            "",
-            "",
-            "",
-          ],
-          [
-            "double-letter",
-            "",
-            "",
-            "double-word",
-            "",
-            "",
-            "",
-            "double-letter",
-            "",
-            "",
-            "",
-            "double-word",
-            "",
-            "",
-            "double-letter",
-          ],
-          [
-            "",
-            "",
-            "double-word",
-            "",
-            "",
-            "",
-            "double-letter",
-            "",
-            "double-letter",
-            "",
-            "",
-            "",
-            "double-word",
-            "",
-            "",
-          ],
-          [
-            "",
-            "double-word",
-            "",
-            "",
-            "",
-            "triple-letter",
-            "",
-            "",
-            "",
-            "triple-letter",
-            "",
-            "",
-            "",
-            "double-word",
-            "",
-          ],
-          [
-            "triple-word",
-            "",
-            "",
-            "double-letter",
-            "",
-            "",
-            "",
-            "triple-word",
-            "",
-            "",
-            "",
-            "double-letter",
-            "",
-            "",
-            "triple-word",
-          ],
-        ],
+        // board: [
+        //   // Data from server
+        // ],
       };
     },
     computed: {
@@ -323,6 +82,22 @@
           default:
             return "";
         }
+      },
+      handleDrop(event, rowIndex, colIndex) {
+        const letterData = JSON.parse(event.dataTransfer.getData("letterData"));
+        const updatedCell = {
+          letter: letterData.letter,
+          points: letterData.points,
+          text: this.board[rowIndex][colIndex].text, // Preserve the original cell text
+        };
+
+        // Emit the updated cell information to the parent component
+        this.$emit("update-board-cell", {
+          rowIndex,
+          colIndex,
+          updatedCell,
+          letter: letterData.letter,
+        });
       },
     },
   };

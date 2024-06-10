@@ -14,7 +14,12 @@
       <p v-if="errorMessage">{{ errorMessage }}</p>
     </div>
     <div v-else>
-      <ScrabbleBoard :players="players" :currentPlayer="name" />
+      <ScrabbleBoard
+        :players="players"
+        :currentPlayer="name"
+        :board="board"
+        @update-board-cell="updateBoardCell"
+      />
       <!-- <p>Players:</p>
       <ul>
         <li v-for="player in players" :key="player">{{ player }}</li>
@@ -56,6 +61,8 @@
         requiredPlayers: 2, // default value
         socket: null,
         letters: [],
+        board: [],
+
         currentTurnPlayer: "",
       };
     },
@@ -92,6 +99,20 @@
           JSON.stringify({
             type: "turn",
             player: nextPlayer,
+            beforePlayer: this.currentTurnPlayer,
+          })
+        );
+      },
+      updateBoardCell({ rowIndex, colIndex, updatedCell, letter }) {
+        const player = this.currentTurnPlayer;
+        this.socket.send(
+          JSON.stringify({
+            type: "update-board-cell",
+            rowIndex,
+            colIndex,
+            updatedCell,
+            letter,
+            player,
           })
         );
       },
@@ -124,6 +145,12 @@
             this.players = this.players.filter(
               (player) => player !== data.name
             );
+            break;
+          case "update-board":
+            this.board = data.board;
+            break;
+          case "update-letters":
+            this.letters = data.letters;
             break;
 
           case "error":

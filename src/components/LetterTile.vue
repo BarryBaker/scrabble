@@ -1,5 +1,5 @@
 <template>
-  <div class="tile">
+  <div class="tile" draggable="true" @dragstart="handleDragStart">
     <span class="letter">{{ letter }}</span>
     <span class="points">{{ points }}</span>
   </div>
@@ -27,7 +27,15 @@
         };
       },
     },
-    methods: {},
+    methods: {
+      handleDragStart(event) {
+        const letterData = {
+          letter: this.letter,
+          points: this.points,
+        };
+        event.dataTransfer.setData("letterData", JSON.stringify(letterData));
+      },
+    },
   };
 </script>
 
