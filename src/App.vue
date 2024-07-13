@@ -1,47 +1,47 @@
 <template>
   <div id="app">
-    <div v-if="!joined" class="join-container">
-      <input v-model="name" placeholder="Enter your name" />
-      <div v-if="players.length === 0">
-        <label>Number of players:</label>
-        <select v-model="requiredPlayers">
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-        </select>
-      </div>
-      <button @click="joinGame">Join Game</button>
-      <p v-if="errorMessage">{{ errorMessage }}</p>
-    </div>
+    <div v-if="!joined" class="join-container"></div>
     <div v-else>
       <ScrabbleBoard
         :players="players"
+        :scores="scores"
         :currentPlayer="name"
         :board="board"
-        @update-board-cell="updateBoardCell"
+        :socket="socket"
       />
-      <!-- <p>Players:</p>
-      <ul>
-        <li v-for="player in players" :key="player">{{ player }}</li>
-      </ul> -->
-      <p v-if="gameStarted">Game started!</p>
+
+      <!-- <p v-if="gameStarted">Game started!</p> -->
+      <p v-if="gameStarted">{{ remainingLetters }} letters remaining</p>
       <p v-if="gameStarted && isActivePlayer">It's your turn!</p>
       <p v-if="gameStarted && !isActivePlayer">
         Waiting for {{ currentTurnPlayer }}'s turn...
       </p>
 
-      <div v-if="gameStarted" class="letters">
-        <h3>Your Letters:</h3>
+      <div v-if="true || gameStarted" class="letters">
+        <!-- <h3>Your Letters:</h3> -->
         <div class="letter-row">
           <LetterTile
-            v-for="(letter, index) in letters"
-            :key="index"
+            v-for="letter in letters"
+            :key="letter.id"
+            :id="letter.id"
             :letter="letter.letter"
             :points="letter.points"
+            :isDraggable="isActivePlayer"
           />
         </div>
       </div>
-      <button v-if="isActivePlayer" @click="passTurn">Pass Turn</button>
+      <button v-if="isActivePlayer && gameStarted" @click="passTurn">
+        Pass Turn
+      </button>
+      <button v-if="isActivePlayer && gameStarted" @click="cancelTurn">
+        Cancel Turn
+      </button>
+      <button v-if="isActivePlayer && gameStarted" @click="changeAllLetters">
+        Change All Letters
+      </button>
+      <button v-if="isActivePlayer && gameStarted" @click="surrender">
+        Surrender
+      </button>
     </div>
   </div>
 </template>
@@ -56,14 +56,16 @@
         name: "",
         joined: false,
         players: [],
+        scores: [],
         gameStarted: false,
         errorMessage: "",
         requiredPlayers: 2, // default value
         socket: null,
         letters: [],
+        allLetters: [],
         board: [],
-
         currentTurnPlayer: "",
+        remainingLetters: 0,
       };
     },
     components: {
@@ -91,28 +93,45 @@
         this.socket.send(JSON.stringify(message));
       },
       passTurn() {
-        const currentIndex = this.players.indexOf(this.currentTurnPlayer);
-        const nextIndex = (currentIndex + 1) % this.players.length;
-        const nextPlayer = this.players[nextIndex];
-
         this.socket.send(
           JSON.stringify({
             type: "turn",
-            player: nextPlayer,
-            beforePlayer: this.currentTurnPlayer,
+            player: this.currentTurnPlayer,
           })
         );
       },
-      updateBoardCell({ rowIndex, colIndex, updatedCell, letter }) {
-        const player = this.currentTurnPlayer;
+      cancelTurn() {
+        this.socket.send(
+          JSON.stringify({
+            type: "cancel-turn",
+            player: this.currentTurnPlayer,
+          })
+        );
+      },
+      surrender() {
+        this.socket.send(
+          JSON.stringify({
+            type: "surrender",
+            player: this.currentTurnPlayer,
+          })
+        );
+      },
+      changeAllLetters() {
+        this.socket.send(
+          JSON.stringify({
+            type: "change-all-letters",
+            player: this.currentTurnPlayer,
+          })
+        );
+      },
+      updateBoardCell({ rowIndex, colIndex, letter }) {
         this.socket.send(
           JSON.stringify({
             type: "update-board-cell",
             rowIndex,
             colIndex,
-            updatedCell,
             letter,
-            player,
+            player: this.currentTurnPlayer,
           })
         );
       },
@@ -124,18 +143,22 @@
         switch (data.type) {
           case "players":
             this.players = data.players;
+            // this.name = this.players[this.players.length - 1];
             this.joined = true;
+
             break;
 
           case "new-player":
-            if (!this.players.includes(data.name)) {
-              this.players.push(data.name);
-            }
+            this.name = data.name;
             break;
 
           case "start-game":
             this.gameStarted = true;
-            this.letters = data.letters;
+            // this.letters = data.letters;
+            break;
+          case "end-game":
+            this.gameStarted = false;
+            // this.letters = data.letters;
 
             break;
           case "turn":
@@ -148,10 +171,22 @@
             break;
           case "update-board":
             this.board = data.board;
+
             break;
           case "update-letters":
+            // console.log(data.letters);
             this.letters = data.letters;
             break;
+          case "update-score":
+            // console.log(data.scores);
+            this.scores = data.scores;
+            break;
+          case "remaining-letters":
+            this.remainingLetters = data.remainingLetters; // Add this line
+            break;
+          // case "update-remaining-letters":
+          //   this.remainingLetters = data.remainingLetters;
+          //   break;
 
           case "error":
             this.errorMessage = data.message;
@@ -163,7 +198,9 @@
       this.socket = new WebSocket("ws://localhost:3000");
       this.socket.onmessage = this.sockets.handleMessage.bind(this);
       this.socket.onopen = () => {
-        console.log("Connected to server");
+        this.name = `Player ${this.players.length + 1}`;
+        this.joined = true;
+        this.socket.send(JSON.stringify({ type: "join", name: this.name }));
       };
     },
   };

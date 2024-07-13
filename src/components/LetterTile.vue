@@ -1,5 +1,10 @@
 <template>
-  <div class="tile" draggable="true" @dragstart="handleDragStart">
+  <div
+    class="tile"
+    :class="{ boardTile: isOnBoard, unconfirmed: !confirmed }"
+    :draggable="isDraggable"
+    @dragstart="handleDragStart"
+  >
     <span class="letter">{{ letter }}</span>
     <span class="points">{{ points }}</span>
   </div>
@@ -10,6 +15,10 @@
     name: "LetterTile",
 
     props: {
+      id: {
+        type: Number,
+        required: true,
+      },
       letter: {
         type: String,
         required: true,
@@ -18,22 +27,24 @@
         type: Number,
         required: true,
       },
-    },
-    computed: {
-      letterData() {
-        return {
-          letter: this.letter,
-          points: this.points,
-        };
+      confirmed: {
+        type: Boolean,
+        default: false,
+      },
+      isOnBoard: {
+        type: Boolean,
+        default: false,
+      },
+      isDraggable: {
+        type: Boolean,
+        default: false,
       },
     },
+    computed: {},
     methods: {
       handleDragStart(event) {
-        const letterData = {
-          letter: this.letter,
-          points: this.points,
-        };
-        event.dataTransfer.setData("letterData", JSON.stringify(letterData));
+        event.dataTransfer.setData("id", this.id);
+        event.dataTransfer.setData("isWild", this.letter === "");
       },
     },
   };
@@ -55,14 +66,32 @@
     text-align: center;
     vertical-align: middle;
     line-height: 50px;
+    color: #000; /* Ensure text color is black */
   }
+
+  .boardTile {
+    width: 38px;
+    height: 38px;
+    margin: 1px;
+    background-color: #ffebcd; /* Different color for board tiles */
+    border: 1px solid #000;
+    border-radius: 2px;
+    font-size: 18px;
+    line-height: 38px;
+  }
+  .unconfirmed {
+    background-color: #ffcccc; /* Color for unconfirmed letters */
+  }
+
   .letter {
     display: block;
+    color: #000; /* Ensure letter color is black */
   }
   .points {
     position: absolute;
-    bottom: 5px;
-    right: 5px;
+    top: 1px;
+    right: 1px;
     font-size: 12px;
+    color: #000; /* Ensure points color is black */
   }
 </style>

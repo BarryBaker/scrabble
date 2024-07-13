@@ -1,7 +1,8 @@
 <template>
-  <div class="player top-player" v-if="topPlayer">{{ topPlayer }}</div>
-  <div class="player right-player" v-if="rightPlayer">{{ rightPlayer }}</div>
-  <div class="player left-player" v-if="leftPlayer">{{ leftPlayer }}</div>
+  <div class="player" v-for="player of players" :key="player">
+    <div class="player-player">{{ player }}</div>
+    <div>{{ scores[player] }}</div>
+  </div>
 
   <div class="board">
     <div v-for="(row, rowIndex) in board" :key="rowIndex" class="row">
@@ -14,16 +15,17 @@
       >
         <!-- {{ getCellText(cell) }} -->
         <LetterTile
-          v-if="cell.letter"
+          v-if="cell.letter != null"
+          :id="cell.id"
           :letter="cell.letter"
           :points="cell.points"
+          :confirmed="cell.confirmed"
+          :isOnBoard="true"
         />
         <span v-else>{{ getCellText(cell.text) }}</span>
       </div>
     </div>
   </div>
-
-  <div class="player bottom-player">{{ currentPlayer }}</div>
 </template>
 
 <script>
@@ -36,9 +38,11 @@
     },
     props: {
       players: Array,
+      scores: Array,
       currentPlayer: String,
       isActivePlayer: Boolean,
       board: Array,
+      socket: Object,
     },
     data() {
       return {
@@ -58,15 +62,6 @@
       currentPlayerIndex() {
         return this.players.indexOf(this.currentPlayer);
       },
-      topPlayer() {
-        return this.players[(this.currentPlayerIndex + 1) % 4];
-      },
-      leftPlayer() {
-        return this.players[(this.currentPlayerIndex + 3) % 4];
-      },
-      rightPlayer() {
-        return this.players[(this.currentPlayerIndex + 2) % 4];
-      },
     },
     methods: {
       getCellText(cell) {
@@ -84,20 +79,37 @@
         }
       },
       handleDrop(event, rowIndex, colIndex) {
-        const letterData = JSON.parse(event.dataTransfer.getData("letterData"));
-        const updatedCell = {
-          letter: letterData.letter,
-          points: letterData.points,
-          text: this.board[rowIndex][colIndex].text, // Preserve the original cell text
-        };
+        const id = event.dataTransfer.getData("id");
+        const isWild = event.dataTransfer.getData("isWild") === "true";
 
+        if (isWild) {
+          const desiredLetter = prompt(
+            "Enter the desired letter for the wild card:"
+          ).toUpperCase();
+          if (!desiredLetter || desiredLetter.length > 2) {
+            alert("Invalid letter. Please enter a single letter.");
+            return;
+          }
+          this.socket.send(
+            JSON.stringify({
+              type: "update-board-cell",
+              rowIndex,
+              colIndex,
+              id,
+              desiredLetter,
+            })
+          );
+        } else {
+          this.socket.send(
+            JSON.stringify({
+              type: "update-board-cell",
+              rowIndex,
+              colIndex,
+              id,
+            })
+          );
+        }
         // Emit the updated cell information to the parent component
-        this.$emit("update-board-cell", {
-          rowIndex,
-          colIndex,
-          updatedCell,
-          letter: letterData.letter,
-        });
       },
     },
   };
@@ -115,22 +127,11 @@
   .player {
     font-size: 14px;
     font-weight: bold;
+    display: flex;
+    flex-direction: row;
   }
-  .top-player {
-    grid-row: 1;
-    grid-column: 2;
-  }
-  .left-player {
-    grid-row: 2;
-    grid-column: 1;
-  }
-  .right-player {
-    grid-row: 2;
-    grid-column: 3;
-  }
-  .bottom-player {
-    grid-row: 3;
-    grid-column: 2;
+  .player-player {
+    margin-right: 20px;
   }
   .board {
     display: grid;
