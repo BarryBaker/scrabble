@@ -216,10 +216,10 @@
       // const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
       // const host = window.location.host;
       // const wsUrl = `${protocol}://${host}`;
-      // this.socket = new WebSocket(process.env.VUE_APP_BASE_URL);
-      this.socket = new WebSocket(
-        "https://7c6e-2001-1c00-2625-f700-19d-3ca1-cef8-488e.ngrok-free.app/"
-      );
+      this.socket = new WebSocket(process.env.VUE_APP_BASE_URL);
+      // this.socket = new WebSocket(
+      //   "https://7c6e-2001-1c00-2625-f700-19d-3ca1-cef8-488e.ngrok-free.app/"
+      // );
 
       this.socket.onmessage = this.sockets.handleMessage.bind(this);
       this.socket.onopen = () => {
