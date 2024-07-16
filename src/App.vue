@@ -1,6 +1,10 @@
 <template>
   <div id="app">
-    <div v-if="!joined" class="join-container"></div>
+    <div v-if="!joined" class="join-container">
+      <input v-model="name" placeholder="Enter your name" />
+      <button @click="joinGame">Join Game</button>
+      <p v-if="errorMessage">{{ errorMessage }}</p>
+    </div>
     <div v-else>
       <ScrabbleBoard
         :players="players"
@@ -42,6 +46,9 @@
       <button v-if="isActivePlayer && gameStarted" @click="surrender">
         Surrender
       </button>
+      <button v-if="isActivePlayer && gameStarted" @click="shuffle">
+        Shuffle
+      </button>
     </div>
   </div>
 </template>
@@ -53,7 +60,7 @@
   export default {
     data() {
       return {
-        name: "",
+        name: null,
         joined: false,
         players: [],
         scores: [],
@@ -79,18 +86,20 @@
     },
     methods: {
       joinGame() {
-        if (this.name.trim() === "") {
-          this.errorMessage = "Name cannot be empty";
-          return;
-        }
-        const message = {
-          type: "join",
-          name: this.name,
-        };
-        if (this.players.length === 0) {
-          message.requiredPlayers = this.requiredPlayers;
-        }
-        this.socket.send(JSON.stringify(message));
+        // if (this.name.trim() === "") {
+        //   this.errorMessage = "Name cannot be empty";
+        //   return;
+        // }
+
+        // if (this.players.length === 0) {
+        //   message.requiredPlayers = this.requiredPlayers;
+        // }
+        this.socket.send(
+          JSON.stringify({
+            type: "join",
+            name: this.name,
+          })
+        );
       },
       passTurn() {
         this.socket.send(
@@ -120,6 +129,14 @@
         this.socket.send(
           JSON.stringify({
             type: "change-all-letters",
+            player: this.currentTurnPlayer,
+          })
+        );
+      },
+      shuffle() {
+        this.socket.send(
+          JSON.stringify({
+            type: "shuffle",
             player: this.currentTurnPlayer,
           })
         );
@@ -198,9 +215,9 @@
       this.socket = new WebSocket("ws://localhost:3000");
       this.socket.onmessage = this.sockets.handleMessage.bind(this);
       this.socket.onopen = () => {
-        this.name = `Player ${this.players.length + 1}`;
-        this.joined = true;
-        this.socket.send(JSON.stringify({ type: "join", name: this.name }));
+        // this.name = `Player ${this.players.length + 1}`;
+        // this.joined = true;
+        // this.socket.send(JSON.stringify({ type: "join", name: this.name }));
       };
     },
   };
