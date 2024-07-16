@@ -212,7 +212,9 @@
       },
     },
     created() {
-      this.socket = new WebSocket("ws://localhost:3000");
+      // this.socket = new WebSocket("ws://localhost:3000");
+      this.socket = new WebSocket(process.env.VUE_APP_BASE_URL);
+
       this.socket.onmessage = this.sockets.handleMessage.bind(this);
       this.socket.onopen = () => {
         // this.name = `Player ${this.players.length + 1}`;
