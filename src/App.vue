@@ -218,7 +218,9 @@
       // const host = window.location.host;
       // const wsUrl = `${protocol}://${host}`;
       // this.socket = new WebSocket(process.env.VUE_APP_BASE_URL);
-      this.socket = new WebSocket("wss://b566-80-114-243-74.ngrok-free.app");
+      this.socket = new WebSocket(
+        "wss://2893-2001-1c00-2625-f700-9973-f4a2-4c13-c3bb.ngrok-free.app"
+      );
 
       this.socket.onmessage = this.sockets.handleMessage.bind(this);
       this.socket.onopen = () => {
