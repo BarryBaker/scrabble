@@ -219,7 +219,7 @@
       // const wsUrl = `${protocol}://${host}`;
       // this.socket = new WebSocket(process.env.VUE_APP_BASE_URL);
       this.socket = new WebSocket(
-        "wss://2553-2001-1c00-2625-f700-486b-340b-1e73-3074.ngrok-free.app"
+        "ws://2553-2001-1c00-2625-f700-486b-340b-1e73-3074.ngrok-free.app"
       );
 
       this.socket.onmessage = this.sockets.handleMessage.bind(this);
