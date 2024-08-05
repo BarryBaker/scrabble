@@ -6,6 +6,12 @@
       <p v-if="errorMessage">{{ errorMessage }}</p>
     </div>
     <div v-else>
+      <div v-if="gameFinished">
+        Winner is
+        <div v-for="player in findHighestScorers(scores)" :key="player">
+          {{ player }}
+        </div>
+      </div>
       <ScrabbleBoard
         :players="players"
         :scores="scores"
@@ -34,21 +40,47 @@
           />
         </div>
       </div>
-      <button v-if="isActivePlayer && gameStarted" @click="passTurn">
-        Pass Turn
-      </button>
-      <button v-if="isActivePlayer && gameStarted" @click="cancelTurn">
-        Cancel Turn
-      </button>
-      <button v-if="isActivePlayer && gameStarted" @click="changeAllLetters">
-        Change All Letters
-      </button>
-      <button v-if="isActivePlayer && gameStarted" @click="surrender">
-        Surrender
-      </button>
-      <button v-if="isActivePlayer && gameStarted" @click="shuffle">
-        Shuffle
-      </button>
+      <div class="actions">
+        <div>
+          <button
+            v-if="isActivePlayer && gameStarted"
+            @click="passTurn"
+            class="btn btn-pass"
+          >
+            <i class="fas fa-check"></i> Ready
+          </button>
+          <button
+            v-if="isActivePlayer && gameStarted"
+            @click="cancelTurn"
+            class="btn btn-cancel"
+          >
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button
+            v-if="isActivePlayer && gameStarted"
+            @click="changeAllLetters"
+            class="btn btn-change"
+          >
+            <i class="fas fa-exchange-alt"></i> Change
+          </button>
+          <button
+            v-if="isActivePlayer && gameStarted"
+            @click="shuffle"
+            class="btn btn-shuffle"
+          >
+            <i class="fas fa-random"></i> Shuffle
+          </button>
+        </div>
+        <div>
+          <button
+            v-if="isActivePlayer && gameStarted"
+            @click="surrender"
+            class="btn btn-surrender"
+          >
+            <i class="fas fa-stop"></i> Done
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -56,6 +88,8 @@
 <script>
   import ScrabbleBoard from "./components/ScrabbleBoard.vue";
   import LetterTile from "./components/LetterTile.vue";
+  import "@fortawesome/fontawesome-free/css/all.css";
+  import "@fortawesome/fontawesome-free/js/all.js";
 
   export default {
     data() {
@@ -65,6 +99,7 @@
         players: [],
         scores: [],
         gameStarted: false,
+        gameFinished: false,
         errorMessage: "",
         requiredPlayers: 2, // default value
         socket: null,
@@ -152,6 +187,21 @@
           })
         );
       },
+      findHighestScorers(scores) {
+        let highestScore = -Infinity;
+        let highestScorers = [];
+
+        for (const [player, score] of Object.entries(scores)) {
+          if (score > highestScore) {
+            highestScore = score;
+            highestScorers = [player];
+          } else if (score === highestScore) {
+            highestScorers.push(player);
+          }
+        }
+
+        return highestScorers;
+      },
     },
     sockets: {
       handleMessage(event) {
@@ -175,6 +225,7 @@
             break;
           case "end-game":
             this.gameStarted = false;
+            this.gameFinished = true;
             // this.letters = data.letters;
 
             break;
@@ -260,5 +311,41 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+  }
+  .actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .actions .btn {
+    margin: 5px;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+  }
+  .actions .btn i {
+    margin-right: 5px;
+  }
+  .actions .btn-pass {
+    background-color: #4caf50;
+    color: white;
+  }
+  .actions .btn-cancel {
+    background-color: #9c27b0;
+    color: white;
+  }
+  .actions .btn-change {
+    background-color: #ff9800;
+    color: white;
+  }
+  .actions .btn-surrender {
+    background-color: #f44336;
+    color: white;
+  }
+  .actions .btn-shuffle {
+    background-color: #3f51b5;
+    color: white;
   }
 </style>
