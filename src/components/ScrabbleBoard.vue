@@ -20,6 +20,7 @@
           :letter="cell.letter"
           :points="cell.points"
           :confirmed="cell.confirmed"
+          :lastPacked="false"
           :isOnBoard="true"
         />
         <span v-else>{{ getCellText(cell.text) }}</span>
@@ -43,6 +44,8 @@
       isActivePlayer: Boolean,
       board: Array,
       socket: Object,
+      lastPacked: Array,
+      highlightActive: Boolean,
     },
     data() {
       return {
@@ -177,5 +180,8 @@
   .middle-row {
     display: flex;
     flex-direction: row;
+  }
+  .highlight {
+    background-color: lightblue;
   }
 </style>

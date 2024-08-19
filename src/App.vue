@@ -18,6 +18,8 @@
         :currentPlayer="name"
         :board="board"
         :socket="socket"
+        :lastPacked="lastPacked"
+        :highlightActive="highlightActive"
       />
 
       <!-- <p v-if="gameStarted">Game started!</p> -->
@@ -70,10 +72,17 @@
           >
             <i class="fas fa-random"></i> Shuffle
           </button>
+          <button
+            v-if="isActivePlayer && gameStarted"
+            @click="highlightLastPlacedLetters"
+            class="btn btn-highlight"
+          >
+            <i class="fas fa-highlighter"></i> Last
+          </button>
         </div>
         <div>
           <button
-            v-if="isActivePlayer && gameStarted"
+            v-if="isActivePlayer && gameStarted && remainingLetters === 0"
             @click="surrender"
             class="btn btn-surrender"
           >
@@ -108,6 +117,8 @@
         board: [],
         currentTurnPlayer: "",
         remainingLetters: 0,
+        lastPacked: [], // Keep track of the last placed letters
+        highlightActive: false, // Control highlight state
       };
     },
     components: {
@@ -176,6 +187,9 @@
           })
         );
       },
+      highlightLastPlacedLetters() {
+        this.highlightActive = !this.highlightActive;
+      },
       updateBoardCell({ rowIndex, colIndex, letter }) {
         this.socket.send(
           JSON.stringify({
@@ -232,6 +246,11 @@
           case "turn":
             this.currentTurnPlayer = data.player;
             break;
+          case "lastpacked":
+            this.lastPacked = data.lastPacked;
+            // console.log(this.lastPacked, this.letters);
+            break;
+
           case "player-left":
             this.players = this.players.filter(
               (player) => player !== data.name
@@ -250,7 +269,8 @@
             this.scores = data.scores;
             break;
           case "remaining-letters":
-            this.remainingLetters = data.remainingLetters; // Add this line
+            this.remainingLetters = data.remainingLetters;
+
             break;
           // case "update-remaining-letters":
           //   this.remainingLetters = data.remainingLetters;
@@ -347,5 +367,13 @@
   .actions .btn-shuffle {
     background-color: #3f51b5;
     color: white;
+  }
+  .btn-highlight {
+    background-color: #00bcd4;
+    color: white;
+  }
+
+  .btn-highlight i {
+    margin-right: 5px;
   }
 </style>

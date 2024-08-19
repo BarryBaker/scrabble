@@ -39,6 +39,10 @@
         type: Boolean,
         default: false,
       },
+      lastPacked: {
+        type: Boolean,
+        default: false,
+      },
     },
     computed: {},
     methods: {
