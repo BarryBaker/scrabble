@@ -39,7 +39,7 @@
     },
     props: {
       players: Array,
-      scores: Array,
+      scores: Object,
       currentPlayer: String,
       isActivePlayer: Boolean,
       board: Array,

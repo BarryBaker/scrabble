@@ -258,6 +258,7 @@
             break;
           case "update-board":
             this.board = data.board;
+            // console.log(this.board);
 
             break;
           case "update-letters":
