@@ -18,8 +18,7 @@
         :currentPlayer="name"
         :board="board"
         :socket="socket"
-        :lastPacked="lastPacked"
-        :highlightActive="highlightActive"
+        :lastPackedids="lastPackedids"
       />
 
       <!-- <p v-if="gameStarted">Game started!</p> -->
@@ -73,7 +72,7 @@
             <i class="fas fa-random"></i> Shuffle
           </button>
           <button
-            v-if="isActivePlayer && gameStarted"
+            v-if="gameStarted"
             @click="highlightLastPlacedLetters"
             class="btn btn-highlight"
           >
@@ -118,7 +117,7 @@
         currentTurnPlayer: "",
         remainingLetters: 0,
         lastPacked: [], // Keep track of the last placed letters
-        highlightActive: false, // Control highlight state
+        lastPackedids: [],
       };
     },
     components: {
@@ -188,7 +187,15 @@
         );
       },
       highlightLastPlacedLetters() {
-        this.highlightActive = !this.highlightActive;
+        // const ids = [];
+        for (let i of this.lastPacked) {
+          this.lastPackedids.push(i.id);
+        }
+        setTimeout(() => {
+          this.lastPackedids = [];
+        }, 1000);
+        // console.log(ids);
+        // this.highlightActive = !this.highlightActive;
       },
       updateBoardCell({ rowIndex, colIndex, letter }) {
         this.socket.send(
@@ -248,7 +255,8 @@
             break;
           case "lastpacked":
             this.lastPacked = data.lastPacked;
-            // console.log(this.lastPacked, this.letters);
+            this.lastPackedids = [];
+            // console.log(this.lastPacked, this.board);
             break;
 
           case "player-left":
@@ -262,7 +270,7 @@
 
             break;
           case "update-letters":
-            // console.log(data.letters);
+            console.log(data.letters);
             this.letters = data.letters;
             break;
           case "update-score":

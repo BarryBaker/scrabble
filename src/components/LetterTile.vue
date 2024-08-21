@@ -1,7 +1,11 @@
 <template>
   <div
     class="tile"
-    :class="{ boardTile: isOnBoard, unconfirmed: !confirmed }"
+    :class="{
+      boardTile: isOnBoard,
+      unconfirmed: !confirmed,
+      lastPacked: lastPacked,
+    }"
     :draggable="isDraggable"
     @dragstart="handleDragStart"
   >
@@ -86,7 +90,9 @@
   .unconfirmed {
     background-color: #ffcccc; /* Color for unconfirmed letters */
   }
-
+  .lastPacked {
+    background-color: #fc9797; /* Color for unconfirmed letters */
+  }
   .letter {
     display: block;
     color: #000; /* Ensure letter color is black */

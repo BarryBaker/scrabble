@@ -20,7 +20,7 @@
           :letter="cell.letter"
           :points="cell.points"
           :confirmed="cell.confirmed"
-          :lastPacked="false"
+          :lastPacked="lastPackedids.includes(cell.id)"
           :isOnBoard="true"
         />
         <span v-else>{{ getCellText(cell.text) }}</span>
@@ -44,8 +44,7 @@
       isActivePlayer: Boolean,
       board: Array,
       socket: Object,
-      lastPacked: Array,
-      highlightActive: Boolean,
+      lastPackedids: Array,
     },
     data() {
       return {
