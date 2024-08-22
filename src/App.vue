@@ -256,8 +256,7 @@
 
           case "start-game":
             this.gameStarted = true;
-            // console.log(this.gameStarted);
-            // this.letters = data.letters;
+
             break;
           case "end-game":
             this.gameStarted = false;
