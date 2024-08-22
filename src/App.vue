@@ -1,6 +1,11 @@
 <template>
   <div id="app">
     <div v-if="!joined" class="join-container">
+      <div>
+        <button v-if="sessionName" @click="reconnect" class="btn btn-reconnect">
+          <i class="fas fa-sync-alt"></i> Reconnect
+        </button>
+      </div>
       <input v-model="name" placeholder="Enter your name" />
       <button @click="joinGame">Join Game</button>
       <p v-if="errorMessage">{{ errorMessage }}</p>
@@ -128,17 +133,12 @@
       isActivePlayer() {
         return this.currentTurnPlayer === this.name;
       },
+      sessionName() {
+        return sessionStorage.getItem("playerName");
+      },
     },
     methods: {
       joinGame() {
-        // if (this.name.trim() === "") {
-        //   this.errorMessage = "Name cannot be empty";
-        //   return;
-        // }
-
-        // if (this.players.length === 0) {
-        //   message.requiredPlayers = this.requiredPlayers;
-        // }
         this.socket.send(
           JSON.stringify({
             type: "join",
@@ -169,6 +169,19 @@
             player: this.currentTurnPlayer,
           })
         );
+      },
+      reconnect() {
+        const storedName = sessionStorage.getItem("playerName");
+        if (storedName) {
+          // console.log(storedName);
+          this.name = storedName;
+          this.socket.send(
+            JSON.stringify({
+              type: "rejoin",
+              player: this.name,
+            })
+          );
+        }
       },
       changeAllLetters() {
         this.socket.send(
@@ -238,15 +251,18 @@
 
           case "new-player":
             this.name = data.name;
+            sessionStorage.setItem("playerName", this.name);
             break;
 
           case "start-game":
             this.gameStarted = true;
+            // console.log(this.gameStarted);
             // this.letters = data.letters;
             break;
           case "end-game":
             this.gameStarted = false;
             this.gameFinished = true;
+            sessionStorage.removeItem("playerName");
             // this.letters = data.letters;
 
             break;
@@ -270,7 +286,6 @@
 
             break;
           case "update-letters":
-            console.log(data.letters);
             this.letters = data.letters;
             break;
           case "update-score":
@@ -292,20 +307,10 @@
       },
     },
     created() {
-      // this.socket = new WebSocket("ws://localhost:3000");
-      // const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-      // console.log(protocol);
-      // const host = window.location.host;
-      // const wsUrl = `${protocol}://${host}`;
       this.socket = new WebSocket(process.env.VUE_APP_BASE_URL);
-      // this.socket = new WebSocket("wss://056c-80-114-243-74.ngrok-free.app");
-
       this.socket.onmessage = this.sockets.handleMessage.bind(this);
-      this.socket.onopen = () => {
-        // this.name = `Player ${this.players.length + 1}`;
-        // this.joined = true;
-        // this.socket.send(JSON.stringify({ type: "join", name: this.name }));
-      };
+
+      this.socket.onopen = () => {};
     },
   };
 </script>
@@ -383,6 +388,14 @@
   }
 
   .btn-highlight i {
+    margin-right: 5px;
+  }
+  .btn-reconnect {
+    background-color: #ff9800; /* Orange color */
+    color: #fff;
+  }
+
+  .btn-reconnect i {
     margin-right: 5px;
   }
 </style>
