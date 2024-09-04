@@ -8,6 +8,8 @@
       </div>
       <input v-model="name" placeholder="Enter your name" />
       <button @click="joinGame">Join Game</button>
+      <button @click="newGame(2)">NEW Game 2 player</button>
+      <button @click="newGame(3)">NEW Game 3 player</button>
       <p v-if="errorMessage">{{ errorMessage }}</p>
     </div>
     <div v-else>
@@ -143,6 +145,14 @@
           JSON.stringify({
             type: "join",
             name: this.name,
+          })
+        );
+      },
+      newGame(playerCnt) {
+        this.socket.send(
+          JSON.stringify({
+            type: "new",
+            playerCnt: playerCnt,
           })
         );
       },
