@@ -45,6 +45,7 @@
       board: Array,
       socket: Object,
       lastPackedids: Array,
+      roomId: Number,
     },
     data() {
       return {
@@ -99,6 +100,7 @@
               colIndex,
               id,
               desiredLetter,
+              roomId: this.roomId,
             })
           );
         } else {
@@ -108,6 +110,7 @@
               rowIndex,
               colIndex,
               id,
+              roomId: this.roomId,
             })
           );
         }

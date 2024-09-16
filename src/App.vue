@@ -7,10 +7,22 @@
         </button>
       </div>
       <input v-model="name" placeholder="Enter your name" />
-      <button @click="joinGame">Join Game</button>
-      <button @click="newGame(2)">NEW Game 2 player</button>
-      <button @click="newGame(3)">NEW Game 3 player</button>
+      <button @click="joinGame" :disabled="!selectedRoom">Join Game</button>
+      <input
+        v-model="newRoomName"
+        placeholder="Enter Room Name"
+        class="room-name-input"
+      />
+      <button @click="newGame(2)">NEW Game 2 Players</button>
+      <button @click="newGame(3)">NEW Game 3 Players</button>
+      <button @click="newGame(4)">NEW Game 4 Players</button>
+
       <p v-if="errorMessage">{{ errorMessage }}</p>
+      <RoomList
+        :rooms="rooms"
+        :selectedRoom="selectedRoom"
+        @select-room="selectRoom"
+      />
     </div>
     <div v-else>
       <div v-if="gameFinished">
@@ -26,6 +38,7 @@
         :board="board"
         :socket="socket"
         :lastPackedids="lastPackedids"
+        :roomId="roomId"
       />
 
       <!-- <p v-if="gameStarted">Game started!</p> -->
@@ -103,6 +116,7 @@
 <script>
   import ScrabbleBoard from "./components/ScrabbleBoard.vue";
   import LetterTile from "./components/LetterTile.vue";
+  import RoomList from "./components/RoomList.vue";
   import "@fortawesome/fontawesome-free/css/all.css";
   import "@fortawesome/fontawesome-free/js/all.js";
 
@@ -111,6 +125,7 @@
       return {
         name: null,
         joined: false,
+        roomId: null,
         players: [],
         scores: [],
         gameStarted: false,
@@ -125,11 +140,15 @@
         remainingLetters: 0,
         lastPacked: [], // Keep track of the last placed letters
         lastPackedids: [],
+        rooms: [],
+        selectedRoom: null, // ID of the selected rooms
+        newRoomName: "",
       };
     },
     components: {
       ScrabbleBoard,
       LetterTile,
+      RoomList,
     },
     computed: {
       isActivePlayer() {
@@ -141,18 +160,26 @@
     },
     methods: {
       joinGame() {
-        this.socket.send(
-          JSON.stringify({
-            type: "join",
-            name: this.name,
-          })
-        );
+        if (this.selectedRoom) {
+          console.log(this.selectedRoom);
+          this.socket.send(
+            JSON.stringify({
+              type: "join",
+              name: this.name,
+              roomId: this.selectedRoom,
+            })
+          );
+        }
+      },
+      selectRoom(id) {
+        this.selectedRoom = id;
       },
       newGame(playerCnt) {
         this.socket.send(
           JSON.stringify({
-            type: "new",
+            type: "create-game",
             playerCnt: playerCnt,
+            name: this.newRoomName,
           })
         );
       },
@@ -161,6 +188,7 @@
           JSON.stringify({
             type: "turn",
             player: this.currentTurnPlayer,
+            roomId: this.roomId,
           })
         );
       },
@@ -169,6 +197,7 @@
           JSON.stringify({
             type: "cancel-turn",
             player: this.currentTurnPlayer,
+            roomId: this.roomId,
           })
         );
       },
@@ -177,18 +206,21 @@
           JSON.stringify({
             type: "surrender",
             player: this.currentTurnPlayer,
+            roomId: this.roomId,
           })
         );
       },
       reconnect() {
         const storedName = sessionStorage.getItem("playerName");
-        if (storedName) {
-          // console.log(storedName);
+        const storedRoomId = sessionStorage.getItem("roomId");
+        if (storedName && storedRoomId) {
           this.name = storedName;
+          this.roomId = storedRoomId;
           this.socket.send(
             JSON.stringify({
-              type: "rejoin",
+              type: "reconnect",
               player: this.name,
+              roomId: this.roomId,
             })
           );
         }
@@ -198,6 +230,7 @@
           JSON.stringify({
             type: "change-all-letters",
             player: this.currentTurnPlayer,
+            roomId: this.roomId,
           })
         );
       },
@@ -206,6 +239,7 @@
           JSON.stringify({
             type: "shuffle",
             player: this.currentTurnPlayer,
+            roomId: this.roomId,
           })
         );
       },
@@ -217,20 +251,8 @@
         setTimeout(() => {
           this.lastPackedids = [];
         }, 1000);
-        // console.log(ids);
-        // this.highlightActive = !this.highlightActive;
       },
-      updateBoardCell({ rowIndex, colIndex, letter }) {
-        this.socket.send(
-          JSON.stringify({
-            type: "update-board-cell",
-            rowIndex,
-            colIndex,
-            letter,
-            player: this.currentTurnPlayer,
-          })
-        );
-      },
+
       findHighestScorers(scores) {
         let highestScore = -Infinity;
         let highestScorers = [];
@@ -246,6 +268,17 @@
 
         return highestScorers;
       },
+      fetchRooms() {
+        fetch(process.env.VUE_APP_BASE_URL.replace("ws", "http") + "/rooms")
+          .then((response) => response.json())
+          .then((data) => {
+            // console.log(data);
+            this.rooms = data; // Convert rooms object to array
+          })
+          .catch((error) => {
+            console.error("Error fetching rooms:", error);
+          });
+      },
     },
     sockets: {
       handleMessage(event) {
@@ -254,7 +287,6 @@
         switch (data.type) {
           case "players":
             this.players = data.players;
-            // this.name = this.players[this.players.length - 1];
             this.joined = true;
 
             break;
@@ -262,16 +294,20 @@
           case "new-player":
             this.name = data.name;
             sessionStorage.setItem("playerName", this.name);
+            sessionStorage.setItem("roomId", data.roomId);
+            this.fetchRooms();
             break;
 
           case "start-game":
             this.gameStarted = true;
+            this.roomId = data.roomId;
 
             break;
           case "end-game":
             this.gameStarted = false;
             this.gameFinished = true;
             sessionStorage.removeItem("playerName");
+            sessionStorage.removeItem("roomId");
             // this.letters = data.letters;
 
             break;
@@ -291,7 +327,6 @@
             break;
           case "update-board":
             this.board = data.board;
-            // console.log(this.board);
 
             break;
           case "update-letters":
@@ -305,13 +340,25 @@
             this.remainingLetters = data.remainingLetters;
 
             break;
-          // case "update-remaining-letters":
-          //   this.remainingLetters = data.remainingLetters;
-          //   break;
+          case "game-created":
+            this.fetchRooms();
+            break;
 
           case "error":
             this.errorMessage = data.message;
             break;
+        }
+      },
+    },
+    watch: {
+      rooms(newRooms) {
+        // Check if rooms array is non-empty, and no room is selected yet
+        if (newRooms.length > 0 && this.selectedRoom === null) {
+          this.selectedRoom = newRooms[0].roomId; // Automatically select the first room
+        }
+        // If rooms become empty, set selectedRoom to null
+        if (newRooms.length === 0) {
+          this.selectedRoom = null;
         }
       },
     },
@@ -320,6 +367,9 @@
       this.socket.onmessage = this.sockets.handleMessage.bind(this);
 
       this.socket.onopen = () => {};
+    },
+    mounted() {
+      this.fetchRooms();
     },
   };
 </script>
@@ -406,5 +456,19 @@
 
   .btn-reconnect i {
     margin-right: 5px;
+  }
+  .game-item {
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+
+  .game-item.selected {
+    background-color: lightblue;
+  }
+  .room-name-input {
+    margin-bottom: 10px;
+    padding: 5px;
   }
 </style>
