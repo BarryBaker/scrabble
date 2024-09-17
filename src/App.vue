@@ -1,30 +1,55 @@
 <template>
   <div id="app">
     <div v-if="!joined" class="join-container">
-      <div>
-        <button v-if="sessionName" @click="reconnect" class="btn btn-reconnect">
+      <div v-if="sessionName" class="reconnect-container">
+        <button @click="reconnect" class="btn btn-reconnect">
           <i class="fas fa-sync-alt"></i> Reconnect
         </button>
       </div>
-      <input v-model="name" placeholder="Enter your name" />
-      <button @click="joinGame" :disabled="!selectedRoom">Join Game</button>
-      <input
-        v-model="newRoomName"
-        placeholder="Enter Room Name"
-        class="room-name-input"
-      />
-      <button @click="newGame(2)">NEW Game 2 Players</button>
-      <button @click="newGame(3)">NEW Game 3 Players</button>
-      <button @click="newGame(4)">NEW Game 4 Players</button>
+      <div class="form-group">
+        <input
+          v-model="name"
+          placeholder="Enter your name"
+          class="input-field"
+        />
+      </div>
+      <div class="button-group">
+        <button
+          @click="joinGame"
+          :disabled="!selectedRoom"
+          class="btn btn-primary"
+        >
+          Join Game
+        </button>
+      </div>
+      <div class="form-group">
+        <input
+          v-model="newRoomName"
+          placeholder="Enter Room Name"
+          class="input-field"
+        />
+      </div>
 
-      <p v-if="errorMessage">{{ errorMessage }}</p>
+      <div class="button-group">
+        <button @click="newGame(2)" class="btn btn-secondary">
+          New Game 2 Players
+        </button>
+        <button @click="newGame(3)" class="btn btn-secondary">
+          New Game 3 Players
+        </button>
+        <button @click="newGame(4)" class="btn btn-secondary">
+          New Game 4 Players
+        </button>
+      </div>
+
+      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       <RoomList
         :rooms="rooms"
         :selectedRoom="selectedRoom"
         @select-room="selectRoom"
       />
     </div>
-    <div v-else>
+    <div v-else class="table-container">
       <div v-if="gameFinished">
         Winner is
         <div v-for="player in findHighestScorers(scores)" :key="player">
@@ -66,35 +91,35 @@
           <button
             v-if="isActivePlayer && gameStarted"
             @click="passTurn"
-            class="btn btn-pass"
+            class="btn btn-control btn-pass"
           >
             <i class="fas fa-check"></i> Ready
           </button>
           <button
             v-if="isActivePlayer && gameStarted"
             @click="cancelTurn"
-            class="btn btn-cancel"
+            class="btn btn-control btn-cancel"
           >
             <i class="fas fa-times"></i> Cancel
           </button>
           <button
             v-if="isActivePlayer && gameStarted"
             @click="changeAllLetters"
-            class="btn btn-change"
+            class="btn btn-control btn-change"
           >
             <i class="fas fa-exchange-alt"></i> Change
           </button>
           <button
             v-if="isActivePlayer && gameStarted"
             @click="shuffle"
-            class="btn btn-shuffle"
+            class="btn btn-control btn-shuffle"
           >
             <i class="fas fa-random"></i> Shuffle
           </button>
           <button
             v-if="gameStarted"
             @click="highlightLastPlacedLetters"
-            class="btn btn-highlight"
+            class="btn btn-control btn-highlight"
           >
             <i class="fas fa-highlighter"></i> Last
           </button>
@@ -103,7 +128,7 @@
           <button
             v-if="isActivePlayer && gameStarted && remainingLetters === 0"
             @click="surrender"
-            class="btn btn-surrender"
+            class="btn btn-control btn-surrender"
           >
             <i class="fas fa-stop"></i> Done
           </button>
@@ -380,18 +405,108 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: #4caf50;
+    background-color: #135d67;
     flex-direction: column;
+    font-family: "Roboto", sans-serif;
   }
   .join-container {
+    background-color: rgb(41, 105, 174);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 300px;
+  }
+  .table-container {
+    background-color: #2794a2;
+    padding: 50px;
+    border-radius: 10px;
+  }
+  .form-group {
+    width: 100%;
+    /* margin-bottom: 20px; */
+  }
+
+  .input-field {
+    width: 93%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+    font-size: 16px;
+  }
+
+  /* Button styles */
+  .button-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .btn {
+    margin: 5px 0;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 100%;
+    text-align: center;
+    transition: background-color 0.2s;
+  }
+  .btn-control {
+    width: 100px;
+  }
+  .btn-primary {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+  }
+
+  .btn-primary:disabled {
+    background-color: #ccc;
+  }
+
+  .btn-secondary {
+    background-color: #ff9800;
+    color: white;
+    border: none;
+  }
+  .reconnect-container {
+    margin-bottom: 20px;
+  }
+
+  .btn-reconnect {
+    background-color: #f44336; /* Red color */
+    color: white;
+    border: none;
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .btn-reconnect i {
+    margin-right: 5px;
+  }
+
+  /* Error message */
+  .error-message {
+    color: #e53935;
+    font-weight: bold;
+    margin-top: 10px;
   }
   .game-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 300px;
   }
   .row {
     display: flex;
@@ -456,6 +571,12 @@
 
   .btn-reconnect i {
     margin-right: 5px;
+  }
+  .btn:hover {
+    background-color: #388e3c; /* Darker green for primary buttons */
+  }
+  .btn-secondary:hover {
+    background-color: #e65100; /* Darker orange */
   }
   .game-item {
     padding: 10px;
