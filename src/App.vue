@@ -156,7 +156,7 @@
         gameStarted: false,
         gameFinished: false,
         errorMessage: "",
-        requiredPlayers: 2, // default value
+        requiredPlayers: 2, // default valuee
         socket: null,
         letters: [],
         allLetters: [],
