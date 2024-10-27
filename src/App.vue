@@ -8,22 +8,6 @@
       </div>
       <div class="form-group">
         <input
-          v-model="name"
-          placeholder="Enter your name"
-          class="input-field"
-        />
-      </div>
-      <div class="button-group">
-        <button
-          @click="joinGame"
-          :disabled="!selectedRoom"
-          class="btn btn-primary"
-        >
-          Join Game
-        </button>
-      </div>
-      <div class="form-group">
-        <input
           v-model="newRoomName"
           placeholder="Enter Room Name"
           class="input-field"
@@ -47,6 +31,13 @@
         :rooms="rooms"
         :selectedRoom="selectedRoom"
         @select-room="selectRoom"
+      />
+      <PlayerTextInput
+        v-if="showNameInput"
+        :visible="showNameInput"
+        placeholder="Enter your name"
+        buttonText="Join"
+        @confirm="confirmName"
       />
     </div>
     <div v-else class="table-container">
@@ -142,6 +133,8 @@
   import ScrabbleBoard from "./components/ScrabbleBoard.vue";
   import LetterTile from "./components/LetterTile.vue";
   import RoomList from "./components/RoomList.vue";
+  import PlayerTextInput from "./components/PlayerTextInput.vue";
+
   import "@fortawesome/fontawesome-free/css/all.css";
   import "@fortawesome/fontawesome-free/js/all.js";
 
@@ -168,12 +161,14 @@
         rooms: [],
         selectedRoom: null, // ID of the selected rooms
         newRoomName: "",
+        showNameInput: false,
       };
     },
     components: {
       ScrabbleBoard,
       LetterTile,
       RoomList,
+      PlayerTextInput,
     },
     computed: {
       isActivePlayer() {
@@ -198,6 +193,19 @@
       },
       selectRoom(id) {
         this.selectedRoom = id;
+        console.log(this.rooms);
+        const selectedRoom = this.rooms.find((room) => room.roomId === id);
+
+        if (selectedRoom) {
+          this.showNameInput = true;
+        }
+      },
+      confirmName(inputValue) {
+        if (inputValue) {
+          this.name = inputValue;
+          this.showNameInput = false;
+          this.joinGame();
+        }
       },
       newGame(playerCnt) {
         this.socket.send(
