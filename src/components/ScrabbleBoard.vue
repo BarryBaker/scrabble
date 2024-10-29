@@ -1,7 +1,9 @@
 <template>
-  <div class="player" v-for="player of players" :key="player">
-    <div class="player-player">{{ player }}</div>
-    <div>{{ scores[player] }}</div>
+  <div class="player-container">
+    <div class="player" v-for="player of players" :key="player">
+      <div class="player-name">{{ player }}</div>
+      <div class="player-score">{{ scores[player] }}</div>
+    </div>
   </div>
 
   <div class="board">
@@ -27,6 +29,13 @@
       </div>
     </div>
   </div>
+  <PlayerTextInput
+    v-if="showWildInput"
+    :visible="showWildInput"
+    placeholder="Enter a letter"
+    buttonText="Submit"
+    @confirm="setWild"
+  />
 </template>
 
 <script>
@@ -49,9 +58,8 @@
     },
     data() {
       return {
-        // board: [
-        //   // Data from server
-        // ],
+        showWildInput: false,
+        desiredLetter: "",
       };
     },
     computed: {
@@ -67,6 +75,10 @@
       },
     },
     methods: {
+      setWild(letter) {
+        this.desiredLetter = letter;
+        this.showWildInput = false;
+      },
       getCellText(cell) {
         switch (cell) {
           case "triple-word":
@@ -129,15 +141,34 @@
     align-items: center;
     justify-items: center;
   }
+  .player-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    font-family: Arial, sans-serif;
+  }
+
   .player {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: bold;
     display: flex;
-    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #f0f8ff;
+    border-radius: 8px;
+    width: 33%;
+    max-width: 300px;
   }
-  .player-player {
-    margin-right: 20px;
+
+  .player-name {
+    color: #333;
   }
+
+  .player-score {
+    color: #007bff;
+  }
+
   .board {
     display: grid;
     grid-template-columns: repeat(15, 1fr);

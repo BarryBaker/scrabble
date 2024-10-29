@@ -6,6 +6,7 @@
           <i class="fas fa-sync-alt"></i> Reconnect
         </button>
       </div>
+      <div><p>Create Room or Join an open Room</p></div>
       <div class="button-group">
         <button @click="openCreateRoom" class="btn btn-secondary">
           Create Room
@@ -237,6 +238,7 @@
         selectedRoom: null, // ID of the selected rooms
         newRoomName: "",
         showNameInput: false,
+        showWildInput: false,
         showCreateRoomInput: false,
         selectedLanguage: "hu_HU",
       };
@@ -263,19 +265,15 @@
         this.showCreateRoomInput = false;
       },
       createRoom() {
-        if (this.newRoomName && this.selectedLanguage && this.requiredPlayers) {
-          this.socket.send(
-            JSON.stringify({
-              type: "create-game",
-              playerCnt: Number(this.requiredPlayers),
-              lang: this.selectedLanguage,
-              name: this.newRoomName,
-            })
-          );
-          this.showCreateRoomInput = false;
-        } else {
-          this.errorMessage = "Please fill in all fields.";
-        }
+        this.socket.send(
+          JSON.stringify({
+            type: "create-game",
+            playerCnt: Number(this.requiredPlayers),
+            lang: this.selectedLanguage,
+            name: this.newRoomName,
+          })
+        );
+        this.showCreateRoomInput = false;
       },
       joinGame() {
         if (this.selectedRoom) {
