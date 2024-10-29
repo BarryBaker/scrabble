@@ -6,24 +6,99 @@
           <i class="fas fa-sync-alt"></i> Reconnect
         </button>
       </div>
-      <div class="form-group">
-        <input
-          v-model="newRoomName"
-          placeholder="Enter Room Name"
-          class="input-field"
-        />
+      <div class="button-group">
+        <button @click="openCreateRoom" class="btn btn-secondary">
+          Create Room
+        </button>
       </div>
 
-      <div class="button-group">
-        <button @click="newGame(2)" class="btn btn-secondary">
-          New Game 2 Players
-        </button>
-        <button @click="newGame(3)" class="btn btn-secondary">
-          New Game 3 Players
-        </button>
-        <button @click="newGame(4)" class="btn btn-secondary">
-          New Game 4 Players
-        </button>
+      <div v-if="showCreateRoomInput" class="create-room-overlay">
+        <div class="create-room-container">
+          <input
+            v-model="newRoomName"
+            placeholder="Enter Room Name"
+            class="input-field"
+          />
+          <div class="form-group">
+            <label>Language:</label>
+            <div class="language-options">
+              <input
+                type="radio"
+                id="lang-en"
+                value="en_GB"
+                v-model="selectedLanguage"
+              />
+              <label for="lang-en"
+                ><img
+                  src="./assets/flags//gb.png"
+                  alt="English"
+                  class="flag-icon"
+                />
+                English</label
+              >
+              <input
+                type="radio"
+                id="lang-hu"
+                value="hu_HU"
+                v-model="selectedLanguage"
+              />
+              <label for="lang-hu"
+                ><img
+                  src="./assets/flags/hu.png"
+                  alt="Hungarian"
+                  class="flag-icon"
+                />
+                Hungarian</label
+              >
+              <input
+                type="radio"
+                id="lang-nl"
+                value="nl_NL"
+                v-model="selectedLanguage"
+              />
+              <label for="lang-nl"
+                ><img
+                  src="./assets/flags/nl.png"
+                  alt="Dutch"
+                  class="flag-icon"
+                />
+                Dutch</label
+              >
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Number of Players:</label>
+            <div class="player-options">
+              <input
+                type="radio"
+                id="players-2"
+                value="2"
+                v-model="requiredPlayers"
+              />
+              <label for="players-2">2 Players</label>
+              <input
+                type="radio"
+                id="players-3"
+                value="3"
+                v-model="requiredPlayers"
+              />
+              <label for="players-3">3 Players</label>
+              <input
+                type="radio"
+                id="players-4"
+                value="4"
+                v-model="requiredPlayers"
+              />
+              <label for="players-4">4 Players</label>
+            </div>
+          </div>
+          <button @click="createRoom" class="btn btn-primary">
+            Create Room
+          </button>
+          <button @click="closeCreateRoom" class="btn btn-cancel">
+            Cancel
+          </button>
+        </div>
       </div>
 
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
@@ -162,6 +237,8 @@
         selectedRoom: null, // ID of the selected rooms
         newRoomName: "",
         showNameInput: false,
+        showCreateRoomInput: false,
+        selectedLanguage: "hu_HU",
       };
     },
     components: {
@@ -179,6 +256,27 @@
       },
     },
     methods: {
+      openCreateRoom() {
+        this.showCreateRoomInput = true;
+      },
+      closeCreateRoom() {
+        this.showCreateRoomInput = false;
+      },
+      createRoom() {
+        if (this.newRoomName && this.selectedLanguage && this.requiredPlayers) {
+          this.socket.send(
+            JSON.stringify({
+              type: "create-game",
+              playerCnt: Number(this.requiredPlayers),
+              lang: this.selectedLanguage,
+              name: this.newRoomName,
+            })
+          );
+          this.showCreateRoomInput = false;
+        } else {
+          this.errorMessage = "Please fill in all fields.";
+        }
+      },
       joinGame() {
         if (this.selectedRoom) {
           console.log(this.selectedRoom);
@@ -206,15 +304,6 @@
           this.showNameInput = false;
           this.joinGame();
         }
-      },
-      newGame(playerCnt) {
-        this.socket.send(
-          JSON.stringify({
-            type: "create-game",
-            playerCnt: playerCnt,
-            name: this.newRoomName,
-          })
-        );
       },
       passTurn() {
         this.socket.send(
@@ -307,6 +396,7 @@
           .then((data) => {
             // console.log(data);
             this.rooms = data; // Convert rooms object to array
+            console.log(this.rooms);
           })
           .catch((error) => {
             console.error("Error fetching rooms:", error);
@@ -599,5 +689,40 @@
   .room-name-input {
     margin-bottom: 10px;
     padding: 5px;
+  }
+  .create-room-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .create-room-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .language-options {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  .flag-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+  }
+  .player-options {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
   }
 </style>

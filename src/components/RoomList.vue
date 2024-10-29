@@ -7,6 +7,13 @@
       @click="selectRoom(room.roomId)"
     >
       <h3>{{ room.roomName }}</h3>
+      <div class="language-flag">
+        <img
+          :src="getFlagIcon(room.language)"
+          :alt="room.language"
+          class="flag-icon"
+        />
+      </div>
       <p>
         {{ room.players.length }} out of {{ room.requiredPlayers }} players
         joined.
@@ -22,6 +29,9 @@
 </template>
 
 <script>
+  import gbFlag from "../assets/flags/gb.png";
+  import huFlag from "../assets/flags/hu.png";
+  import nlFlag from "../assets/flags/nl.png";
   export default {
     props: {
       rooms: {
@@ -36,6 +46,18 @@
     methods: {
       selectRoom(id) {
         this.$emit("select-room", id); // Emit selected room ID to parent
+      },
+      getFlagIcon(language) {
+        switch (language) {
+          case "en_GB":
+            return gbFlag;
+          case "hu_HU":
+            return huFlag;
+          case "nl_NL":
+            return nlFlag;
+          default:
+            return "/flags/default.png";
+        }
       },
     },
     computed: {
@@ -76,20 +98,6 @@
     margin-top: 10px;
   }
 
-  /* .room-card button {
-    background-color: #8ecae6;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 5px 10px;
-    cursor: pointer;
-    font-size: 0.9rem;
-  }
-
-  .room-card button:hover {
-    background-color: #219ebc;
-  } */
-
   .room-container {
     display: flex;
     flex-wrap: wrap;
@@ -97,8 +105,13 @@
     gap: 10px;
   }
   .room-card.selected {
-    background-color: #e0f7fa;
+    background-color: #94f2ff;
     border-color: #007483;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  .flag-icon {
+    width: 20px;
+    height: 20px;
+    margin-bottom: 10px;
   }
 </style>
