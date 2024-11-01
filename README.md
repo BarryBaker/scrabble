@@ -1,6 +1,6 @@
 Multiplayer Online Scrabble Game
 
-Live Demo: Try the Game Here
+Live Demo: https://poetic-zuccutto-9db83c.netlify.app/
 
 Project Description
 
