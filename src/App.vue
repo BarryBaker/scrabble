@@ -241,6 +241,8 @@
         showWildInput: false,
         showCreateRoomInput: false,
         selectedLanguage: "hu_HU",
+        originalTitle: document.title,
+        flashingInterval: null,
       };
     },
     components: {
@@ -400,6 +402,21 @@
             console.error("Error fetching rooms:", error);
           });
       },
+      startFlashingTab() {
+        if (!this.flashingInterval) {
+          this.flashingInterval = setInterval(() => {
+            document.title =
+              document.title === "Your Turn!"
+                ? this.originalTitle
+                : "Your Turn!";
+          }, 1000);
+        }
+      },
+      stopFlashingTab() {
+        clearInterval(this.flashingInterval);
+        this.flashingInterval = null;
+        document.title = this.originalTitle;
+      },
     },
     sockets: {
       handleMessage(event) {
@@ -480,6 +497,13 @@
         // If rooms become empty, set selectedRoom to null
         if (newRooms.length === 0) {
           this.selectedRoom = null;
+        }
+      },
+      isActivePlayer(newValue) {
+        if (newValue) {
+          this.startFlashingTab();
+        } else {
+          this.stopFlashingTab();
         }
       },
     },
