@@ -9,7 +9,7 @@
       <div><p>Create Room or Join an open Room</p></div>
       <div class="button-group">
         <button @click="createRoom(true)" class="btn btn-secondary">
-          Play computer
+          Play computer (ENG)
         </button>
       </div>
       <div class="button-group">
