@@ -8,6 +8,11 @@
       </div>
       <div><p>Create Room or Join an open Room</p></div>
       <div class="button-group">
+        <button @click="createRoom(true)" class="btn btn-secondary">
+          Play computer
+        </button>
+      </div>
+      <div class="button-group">
         <button @click="openCreateRoom" class="btn btn-secondary">
           Create Room
         </button>
@@ -93,7 +98,7 @@
               <label for="players-4">4 Players</label>
             </div>
           </div>
-          <button @click="createRoom" class="btn btn-primary">
+          <button @click="createRoom(false)" class="btn btn-primary">
             Create Room
           </button>
           <button @click="closeCreateRoom" class="btn btn-cancel">
@@ -266,10 +271,10 @@
       closeCreateRoom() {
         this.showCreateRoomInput = false;
       },
-      createRoom() {
+      createRoom(bot) {
         this.socket.send(
           JSON.stringify({
-            type: "create-game",
+            type: bot ? "create-solo-game" : "create-game",
             playerCnt: Number(this.requiredPlayers),
             lang: this.selectedLanguage,
             name: this.newRoomName,
@@ -299,11 +304,11 @@
         }
       },
       confirmName(inputValue) {
-        if (inputValue) {
-          this.name = inputValue;
-          this.showNameInput = false;
-          this.joinGame();
-        }
+        // if (inputValue) {
+        this.name = inputValue;
+        this.showNameInput = false;
+        this.joinGame();
+        // }
       },
       passTurn() {
         this.socket.send(
