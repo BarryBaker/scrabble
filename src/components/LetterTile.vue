@@ -5,9 +5,13 @@
       boardTile: isOnBoard,
       unconfirmed: !confirmed,
       lastPacked: lastPacked,
+      dragging: isDragging,
     }"
     :draggable="isDraggable"
     @dragstart="handleDragStart"
+    @touchstart="handleTouchStart"
+    @touchmove="handleTouchMove"
+    @touchend="handleTouchEnd"
   >
     <span class="letter">{{ letter }}</span>
     <span class="points">{{ points }}</span>
@@ -48,11 +52,33 @@
         default: false,
       },
     },
+    data() {
+      return {
+        isDragging: false,
+      };
+    },
     computed: {},
     methods: {
       handleDragStart(event) {
         event.dataTransfer.setData("id", this.id);
         event.dataTransfer.setData("isWild", this.letter === "");
+      },
+      handleTouchStart() {
+        if (!this.isDraggable) return;
+        this.isDragging = true;
+        // Store drag data in window for access in drop handler
+        window.dragData = {
+          id: this.id,
+          isWild: this.letter === "",
+        };
+      },
+      handleTouchMove(event) {
+        if (this.isDragging) {
+          event.preventDefault();
+        }
+      },
+      handleTouchEnd() {
+        this.isDragging = false;
       },
     },
   };
@@ -103,5 +129,10 @@
     right: 1px;
     font-size: 12px;
     color: #000; /* Ensure points color is black */
+  }
+
+  .dragging {
+    opacity: 0.7;
+    background-color: #d4a574;
   }
 </style>

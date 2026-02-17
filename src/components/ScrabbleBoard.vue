@@ -14,6 +14,8 @@
         :class="['cell', cell.text]"
         @dragover.prevent
         @drop="handleDrop($event, rowIndex, colIndex)"
+        @touchmove.prevent
+        @touchend="handleTouchDrop($event, rowIndex, colIndex)"
       >
         <!-- {{ getCellText(cell) }} -->
         <LetterTile
@@ -99,7 +101,7 @@
 
         if (isWild) {
           const desiredLetter = prompt(
-            "Enter the desired letter for the wild card:"
+            "Enter the desired letter for the wild card:",
           ).toUpperCase();
           if (!desiredLetter || desiredLetter.length > 2) {
             alert("Invalid letter. Please enter a single letter.");
@@ -113,7 +115,7 @@
               id,
               desiredLetter,
               roomId: this.roomId,
-            })
+            }),
           );
         } else {
           this.socket.send(
@@ -123,10 +125,50 @@
               colIndex,
               id,
               roomId: this.roomId,
-            })
+            }),
           );
         }
         // Emit the updated cell information to the parent component
+      },
+      handleTouchDrop(event, rowIndex, colIndex) {
+        // Get drag data from the global storage set during touchstart
+        const dragData = window.dragData;
+        if (!dragData) return;
+
+        const id = dragData.id;
+        const isWild = dragData.isWild;
+
+        if (isWild) {
+          const desiredLetter = prompt(
+            "Enter the desired letter for the wild card:",
+          ).toUpperCase();
+          if (!desiredLetter || desiredLetter.length > 2) {
+            alert("Invalid letter. Please enter a single letter.");
+            return;
+          }
+          this.socket.send(
+            JSON.stringify({
+              type: "update-board-cell",
+              rowIndex,
+              colIndex,
+              id,
+              desiredLetter,
+              roomId: this.roomId,
+            }),
+          );
+        } else {
+          this.socket.send(
+            JSON.stringify({
+              type: "update-board-cell",
+              rowIndex,
+              colIndex,
+              id,
+              roomId: this.roomId,
+            }),
+          );
+        }
+        // Clear drag data
+        window.dragData = null;
       },
     },
   };
