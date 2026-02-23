@@ -83,20 +83,21 @@
         `;
         this.dragGhost.style.width = rect.width + "px";
         this.dragGhost.style.height = rect.height + "px";
-        this.dragGhost.style.backgroundColor = "#f5deb3";
-        this.dragGhost.style.border = "2px solid #000";
-        this.dragGhost.style.borderRadius = "5px";
+        this.dragGhost.style.backgroundColor = "#fde68a";
+        this.dragGhost.style.border = "none";
+        this.dragGhost.style.borderRadius = "8px";
         this.dragGhost.style.position = "fixed";
         this.dragGhost.style.pointerEvents = "none";
         this.dragGhost.style.zIndex = "10000";
-        this.dragGhost.style.opacity = "0.8";
-        this.dragGhost.style.fontFamily = "Arial, sans-serif";
+        this.dragGhost.style.opacity = "0.85";
+        this.dragGhost.style.fontFamily = "Inter, sans-serif";
         this.dragGhost.style.fontWeight = "bold";
-        this.dragGhost.style.fontSize = "24px";
+        this.dragGhost.style.fontSize = "22px";
         this.dragGhost.style.display = "flex";
         this.dragGhost.style.alignItems = "center";
         this.dragGhost.style.justifyContent = "center";
-        this.dragGhost.style.color = "#000";
+        this.dragGhost.style.color = "#1e293b";
+        this.dragGhost.style.boxShadow = "0 8px 24px rgba(0,0,0,0.3)";
 
         document.body.appendChild(this.dragGhost);
       },
@@ -152,53 +153,81 @@
 
 <style scoped>
   .tile {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 50px;
     height: 50px;
-    margin: 5px;
-    background-color: #f5deb3;
-    border: 2px solid #000;
-    border-radius: 5px;
+    margin: 3px;
+    background: linear-gradient(145deg, #fef3c7, #fde68a);
+    border: none;
+    border-radius: 8px;
     position: relative;
-    font-family: Arial, sans-serif;
-    font-weight: bold;
-    font-size: 24px;
+    font-family: "Inter", sans-serif;
+    font-weight: 700;
+    font-size: 22px;
     text-align: center;
     vertical-align: middle;
     line-height: 50px;
-    color: #000; /* Ensure text color is black */
+    color: #1e293b;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transition: all 0.15s ease;
+    cursor: grab;
+  }
+
+  .tile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
   }
 
   .boardTile {
     width: 38px;
     height: 38px;
-    margin: 1px;
-    background-color: #ffebcd; /* Different color for board tiles */
-    border: 1px solid #000;
-    border-radius: 2px;
-    font-size: 18px;
+    margin: 0;
+    background: linear-gradient(145deg, #fef3c7, #fde68a);
+    border: none;
+    border-radius: 4px;
+    font-size: 17px;
     line-height: 38px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    cursor: default;
   }
+
+  .boardTile:hover {
+    transform: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
   .unconfirmed {
-    background-color: #ffcccc; /* Color for unconfirmed letters */
+    background: linear-gradient(145deg, #fecaca, #fca5a5);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
   }
+
   .lastPacked {
-    background-color: #fc9797; /* Color for unconfirmed letters */
+    background: linear-gradient(145deg, #c4b5fd, #a78bfa);
+    box-shadow: 0 2px 12px rgba(139, 92, 246, 0.4);
   }
+
   .letter {
     display: block;
-    color: #000; /* Ensure letter color is black */
+    color: #1e293b;
   }
+
   .points {
     position: absolute;
-    top: 1px;
-    right: 1px;
-    font-size: 12px;
-    color: #000; /* Ensure points color is black */
+    top: 2px;
+    right: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #64748b;
   }
 
   .dragging {
-    opacity: 0.7;
-    background-color: #d4a574;
+    opacity: 0.5;
+    background: linear-gradient(145deg, #d4a574, #c09060);
+    transform: scale(1.05);
   }
 </style>

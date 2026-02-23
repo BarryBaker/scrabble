@@ -73,29 +73,43 @@
 
 <style scoped>
   .room-card {
-    background-color: #f0f9ff; /* Light blue background */
-    border-radius: 10px;
-    padding: 10px;
-    width: 200px;
-    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif;
-    margin: 10px auto;
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 14px;
+    padding: 16px;
+    width: 220px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    font-family: "Inter", sans-serif;
+    margin: 8px auto;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .room-card:hover {
+    background: rgba(30, 41, 59, 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   }
 
   .room-card h3 {
-    font-size: 1.2rem;
-    color: #333;
-    margin-bottom: 5px;
+    font-size: 1.1rem;
+    color: #e2e8f0;
+    margin: 0 0 8px 0;
+    font-weight: 600;
   }
 
   .room-card p {
-    font-size: 0.9rem;
-    color: #555;
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin: 4px 0;
   }
 
   .room-card .players {
     display: block;
     margin-top: 10px;
+    color: #a78bfa;
+    font-size: 0.85rem;
+    font-weight: 500;
   }
 
   .room-container {
@@ -104,14 +118,17 @@
     justify-content: center;
     gap: 10px;
   }
+
   .room-card.selected {
-    background-color: #94f2ff;
-    border-color: #007483;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.4);
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.2);
   }
+
   .flag-icon {
-    width: 20px;
-    height: 20px;
-    margin-bottom: 10px;
+    width: 22px;
+    height: 22px;
+    margin-bottom: 8px;
+    border-radius: 3px;
   }
 </style>

@@ -49,40 +49,60 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 100;
   }
   .text-input-container {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(145deg, #1e293b, #0f172a);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    padding: 32px;
+    border-radius: 20px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     align-items: center;
+    min-width: 300px;
   }
-  .input-field {
-    width: 200px;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
-    font-size: 16px;
+  .text-input-container .input-field {
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.6);
+    color: #e2e8f0;
+    font-size: 15px;
+    font-family: "Inter", sans-serif;
+    transition: all 0.2s ease;
+    outline: none;
   }
-  .btn-primary {
-    background-color: #4caf50;
+  .text-input-container .input-field:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  }
+  .text-input-container .input-field::placeholder {
+    color: #64748b;
+  }
+  .text-input-container .btn-primary {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
     color: white;
     border: none;
-    padding: 10px;
-    font-size: 16px;
+    padding: 12px 32px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: "Inter", sans-serif;
     cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.2s;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    width: 100%;
   }
-  .btn-primary:hover {
-    background-color: #388e3c;
+  .text-input-container .btn-primary:hover {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    transform: translateY(-1px);
   }
 </style>
