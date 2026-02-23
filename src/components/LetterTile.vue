@@ -55,6 +55,7 @@
     data() {
       return {
         isDragging: false,
+        dragGhost: null,
       };
     },
     computed: {},
@@ -71,14 +72,79 @@
           id: this.id,
           isWild: this.letter === "",
         };
+
+        // Create a visual ghost element that follows the touch
+        const rect = this.$el.getBoundingClientRect();
+        this.dragGhost = document.createElement("div");
+        this.dragGhost.className = "drag-ghost";
+        this.dragGhost.innerHTML = `
+          <span class="letter">${this.letter}</span>
+          <span class="points">${this.points}</span>
+        `;
+        this.dragGhost.style.width = rect.width + "px";
+        this.dragGhost.style.height = rect.height + "px";
+        this.dragGhost.style.backgroundColor = "#f5deb3";
+        this.dragGhost.style.border = "2px solid #000";
+        this.dragGhost.style.borderRadius = "5px";
+        this.dragGhost.style.position = "fixed";
+        this.dragGhost.style.pointerEvents = "none";
+        this.dragGhost.style.zIndex = "10000";
+        this.dragGhost.style.opacity = "0.8";
+        this.dragGhost.style.fontFamily = "Arial, sans-serif";
+        this.dragGhost.style.fontWeight = "bold";
+        this.dragGhost.style.fontSize = "24px";
+        this.dragGhost.style.display = "flex";
+        this.dragGhost.style.alignItems = "center";
+        this.dragGhost.style.justifyContent = "center";
+        this.dragGhost.style.color = "#000";
+
+        document.body.appendChild(this.dragGhost);
       },
       handleTouchMove(event) {
-        if (this.isDragging) {
+        if (this.isDragging && this.dragGhost) {
           event.preventDefault();
+          // Update ghost position to follow the touch
+          const touch = event.touches[0];
+          const ghostSize = 50; // Approximate size, centering on finger
+          this.dragGhost.style.left = touch.clientX - ghostSize / 2 + "px";
+          this.dragGhost.style.top = touch.clientY - ghostSize / 2 + "px";
         }
       },
-      handleTouchEnd() {
+      handleTouchEnd(event) {
         this.isDragging = false;
+
+        // Clean up ghost element
+        if (this.dragGhost) {
+          this.dragGhost.remove();
+          this.dragGhost = null;
+        }
+
+        if (!window.dragData) return;
+
+        // Get the touch coordinates
+        const touch = event.changedTouches[0];
+        const element = document.elementFromPoint(touch.clientX, touch.clientY);
+
+        // Find the cell element
+        let cellElement = element;
+        while (cellElement && !cellElement.classList.contains("cell")) {
+          cellElement = cellElement.parentElement;
+        }
+
+        if (cellElement) {
+          // Emit custom event with drop data
+          const dropEvent = new CustomEvent("touchdrop", {
+            detail: {
+              dragData: window.dragData,
+              cellElement: cellElement,
+            },
+            bubbles: true,
+          });
+          cellElement.dispatchEvent(dropEvent);
+        }
+
+        // Clear drag data
+        window.dragData = null;
       },
     },
   };

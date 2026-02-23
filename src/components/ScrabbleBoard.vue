@@ -14,8 +14,7 @@
         :class="['cell', cell.text]"
         @dragover.prevent
         @drop="handleDrop($event, rowIndex, colIndex)"
-        @touchmove.prevent
-        @touchend="handleTouchDrop($event, rowIndex, colIndex)"
+        @touchdrop="handleTouchDrop($event, rowIndex, colIndex)"
       >
         <!-- {{ getCellText(cell) }} -->
         <LetterTile
@@ -131,8 +130,8 @@
         // Emit the updated cell information to the parent component
       },
       handleTouchDrop(event, rowIndex, colIndex) {
-        // Get drag data from the global storage set during touchstart
-        const dragData = window.dragData;
+        // Get drag data from the custom event detail
+        const dragData = event.detail?.dragData;
         if (!dragData) return;
 
         const id = dragData.id;
@@ -141,7 +140,7 @@
         if (isWild) {
           const desiredLetter = prompt(
             "Enter the desired letter for the wild card:",
-          ).toUpperCase();
+          )?.toUpperCase();
           if (!desiredLetter || desiredLetter.length > 2) {
             alert("Invalid letter. Please enter a single letter.");
             return;
@@ -167,8 +166,6 @@
             }),
           );
         }
-        // Clear drag data
-        window.dragData = null;
       },
     },
   };
