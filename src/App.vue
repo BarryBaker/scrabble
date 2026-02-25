@@ -296,7 +296,7 @@
       },
       selectRoom(id) {
         this.selectedRoom = id;
-        console.log(this.rooms);
+        // console.log(this.rooms);
         const selectedRoom = this.rooms.find((room) => room.roomId === id);
 
         if (selectedRoom) {
@@ -507,6 +507,7 @@
       isActivePlayer(newValue) {
         if (newValue) {
           this.startFlashingTab();
+          this.highlightLastPlacedLetters();
         } else {
           this.stopFlashingTab();
         }

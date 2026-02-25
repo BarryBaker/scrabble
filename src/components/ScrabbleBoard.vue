@@ -30,13 +30,42 @@
       </div>
     </div>
   </div>
-  <PlayerTextInput
-    v-if="showWildInput"
-    :visible="showWildInput"
-    placeholder="Enter a letter"
-    buttonText="Submit"
-    @confirm="setWild"
-  />
+  <transition name="fade">
+    <div
+      v-if="wildModal.visible"
+      class="wild-letter-overlay"
+      @click.self="closeWildModal"
+    >
+      <div class="wild-letter-modal" role="dialog" aria-modal="true">
+        <h3>Place the empty tile</h3>
+        <p class="wild-letter-subtitle">
+          Pick the letter(s) the wild card should act as.
+        </p>
+        <input
+          class="wild-letter-input"
+          v-model="wildModal.inputValue"
+          placeholder=""
+          maxlength="2"
+          @keyup.enter="confirmWildLetter"
+          @keyup.esc="closeWildModal"
+          autocomplete="off"
+          autocapitalize="characters"
+          ref="wildInput"
+        />
+        <p v-if="wildModal.errorMessage" class="wild-letter-error">
+          {{ wildModal.errorMessage }}
+        </p>
+        <div class="wild-letter-actions">
+          <button class="btn btn-primary" @click="confirmWildLetter">
+            Confirm
+          </button>
+          <button class="btn btn-secondary" @click="closeWildModal">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </transition>
 </template>
 
 <script>
@@ -59,8 +88,14 @@
     },
     data() {
       return {
-        showWildInput: false,
-        desiredLetter: "",
+        wildModal: {
+          visible: false,
+          rowIndex: null,
+          colIndex: null,
+          tileId: null,
+          inputValue: "",
+          errorMessage: "",
+        },
       };
     },
     computed: {
@@ -76,9 +111,52 @@
       },
     },
     methods: {
-      setWild(letter) {
-        this.desiredLetter = letter;
-        this.showWildInput = false;
+      openWildModal(rowIndex, colIndex, tileId) {
+        this.wildModal.visible = true;
+        this.wildModal.rowIndex = rowIndex;
+        this.wildModal.colIndex = colIndex;
+        this.wildModal.tileId = tileId;
+        this.wildModal.inputValue = "";
+        this.wildModal.errorMessage = "";
+        this.$nextTick(() => {
+          this.$refs.wildInput?.focus();
+        });
+      },
+      closeWildModal() {
+        this.wildModal.visible = false;
+        this.wildModal.rowIndex = null;
+        this.wildModal.colIndex = null;
+        this.wildModal.tileId = null;
+        this.wildModal.inputValue = "";
+        this.wildModal.errorMessage = "";
+      },
+      confirmWildLetter() {
+        const letter = this.wildModal.inputValue?.trim().toUpperCase();
+        const letterPattern = /^\p{Lu}+$/u;
+        if (!letter || letter.length > 2 || !letterPattern.test(letter)) {
+          this.wildModal.errorMessage =
+            "Enter one to two uppercase letters (e.g. S, SZ, CS).";
+          return;
+        }
+
+        const { rowIndex, colIndex, tileId } = this.wildModal;
+        if (rowIndex === null || colIndex === null || !tileId) {
+          this.closeWildModal();
+          return;
+        }
+
+        this.socket.send(
+          JSON.stringify({
+            type: "update-board-cell",
+            rowIndex,
+            colIndex,
+            id: tileId,
+            desiredLetter: letter,
+            roomId: this.roomId,
+          }),
+        );
+
+        this.closeWildModal();
       },
       getCellText(cell) {
         switch (cell) {
@@ -99,34 +177,18 @@
         const isWild = event.dataTransfer.getData("isWild") === "true";
 
         if (isWild) {
-          const desiredLetter = prompt(
-            "Enter the desired letter for the wild card:",
-          ).toUpperCase();
-          if (!desiredLetter || desiredLetter.length > 2) {
-            alert("Invalid letter. Please enter a single letter.");
-            return;
-          }
-          this.socket.send(
-            JSON.stringify({
-              type: "update-board-cell",
-              rowIndex,
-              colIndex,
-              id,
-              desiredLetter,
-              roomId: this.roomId,
-            }),
-          );
-        } else {
-          this.socket.send(
-            JSON.stringify({
-              type: "update-board-cell",
-              rowIndex,
-              colIndex,
-              id,
-              roomId: this.roomId,
-            }),
-          );
+          this.openWildModal(rowIndex, colIndex, id);
+          return;
         }
+        this.socket.send(
+          JSON.stringify({
+            type: "update-board-cell",
+            rowIndex,
+            colIndex,
+            id,
+            roomId: this.roomId,
+          }),
+        );
         // Emit the updated cell information to the parent component
       },
       handleTouchDrop(event, rowIndex, colIndex) {
@@ -138,34 +200,18 @@
         const isWild = dragData.isWild;
 
         if (isWild) {
-          const desiredLetter = prompt(
-            "Enter the desired letter for the wild card:",
-          )?.toUpperCase();
-          if (!desiredLetter || desiredLetter.length > 2) {
-            alert("Invalid letter. Please enter a single letter.");
-            return;
-          }
-          this.socket.send(
-            JSON.stringify({
-              type: "update-board-cell",
-              rowIndex,
-              colIndex,
-              id,
-              desiredLetter,
-              roomId: this.roomId,
-            }),
-          );
-        } else {
-          this.socket.send(
-            JSON.stringify({
-              type: "update-board-cell",
-              rowIndex,
-              colIndex,
-              id,
-              roomId: this.roomId,
-            }),
-          );
+          this.openWildModal(rowIndex, colIndex, id);
+          return;
         }
+        this.socket.send(
+          JSON.stringify({
+            type: "update-board-cell",
+            rowIndex,
+            colIndex,
+            id,
+            roomId: this.roomId,
+          }),
+        );
       },
     },
   };
@@ -287,5 +333,86 @@
 
   .highlight {
     background-color: rgba(99, 102, 241, 0.3);
+  }
+
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.2s ease;
+  }
+
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
+  }
+
+  .wild-letter-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+  }
+
+  .wild-letter-modal {
+    width: min(400px, 100%);
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    padding: 28px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+    text-align: center;
+    color: #e2e8f0;
+  }
+
+  .wild-letter-modal h3 {
+    margin-bottom: 6px;
+    font-size: 20px;
+    letter-spacing: 0.04em;
+  }
+
+  .wild-letter-subtitle {
+    margin-bottom: 18px;
+    color: rgba(226, 232, 240, 0.8);
+    font-size: 14px;
+  }
+
+  .wild-letter-input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: rgba(15, 23, 42, 0.4);
+    color: #fff;
+    font-size: 18px;
+    letter-spacing: 0.2em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .wild-letter-input:focus {
+    outline: none;
+    border-color: #818cf8;
+    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.24);
+  }
+
+  .wild-letter-error {
+    margin-top: 12px;
+    color: #f87171;
+    font-size: 13px;
+  }
+
+  .wild-letter-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .wild-letter-actions .btn {
+    width: 120px;
   }
 </style>
