@@ -219,19 +219,19 @@
 
   .board {
     display: grid;
-    grid-template-columns: repeat(15, 1fr);
-    grid-template-rows: repeat(15, 1fr);
+    grid-template-columns: repeat(15, var(--cell-size));
+    grid-template-rows: repeat(15, var(--cell-size));
     gap: 1px;
     background: linear-gradient(
       145deg,
       rgba(15, 23, 42, 0.8),
       rgba(0, 0, 0, 0.5)
     );
-    border-radius: 16px;
-    padding: 8px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5),
+    border-radius: var(--board-radius);
+    /* padding: var(--board-padding); */
+    /* box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5),
       inset 0 1px 0 rgba(255, 255, 255, 0.1),
-      inset 0 -2px 4px rgba(0, 0, 0, 0.4);
+      inset 0 -2px 4px rgba(0, 0, 0, 0.4); */
     border: 1px solid rgba(148, 163, 184, 0.15);
   }
 
@@ -240,17 +240,17 @@
   }
 
   .cell {
-    width: 40px;
-    height: 40px;
+    width: var(--cell-size);
+    height: var(--cell-size);
     display: flex;
     justify-content: center;
     align-items: center;
     background: #6aab74;
     text-align: center;
-    font-size: 9px;
+    font-size: var(--cell-font);
     font-weight: 700;
     letter-spacing: 0.03em;
-    border-radius: 3px;
+    border-radius: var(--cell-radius);
     transition: background-color 0.15s ease;
   }
 

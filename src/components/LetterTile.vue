@@ -156,19 +156,19 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 50px;
-    height: 50px;
+    width: var(--hand-tile-size);
+    height: var(--hand-tile-size);
     margin: 3px;
     background: linear-gradient(145deg, #fef3c7, #fde68a);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--hand-tile-radius);
     position: relative;
     font-family: "Inter", sans-serif;
     font-weight: 700;
-    font-size: 22px;
+    font-size: var(--hand-tile-font);
     text-align: center;
     vertical-align: middle;
-    line-height: 50px;
+    line-height: var(--hand-tile-size);
     color: #1e293b;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2),
       inset 0 1px 0 rgba(255, 255, 255, 0.5);
@@ -183,14 +183,14 @@
   }
 
   .boardTile {
-    width: 38px;
-    height: 38px;
+    width: var(--board-tile-size);
+    height: var(--board-tile-size);
     margin: 0;
     background: linear-gradient(145deg, #fef3c7, #fde68a);
     border: none;
-    border-radius: 4px;
-    font-size: 17px;
-    line-height: 38px;
+    border-radius: var(--board-tile-radius);
+    font-size: var(--board-tile-font);
+    line-height: var(--board-tile-size);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     cursor: default;
   }
@@ -218,9 +218,9 @@
 
   .points {
     position: absolute;
-    top: 2px;
-    right: 3px;
-    font-size: 10px;
+    top: 1px;
+    right: 2px;
+    font-size: var(--points-font);
     font-weight: 600;
     color: #64748b;
   }
