@@ -20,8 +20,8 @@
       </p>
 
       <div class="players">
-        <span v-for="player of room.players" :key="player.name" class="player">
-          {{ player.name }},
+        <span v-for="player of room.players" :key="player" class="player">
+          {{ player }},
         </span>
       </div>
     </div>

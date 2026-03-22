@@ -401,7 +401,7 @@
           .then((data) => {
             // console.log(data);
             this.rooms = data; // Convert rooms object to array
-            console.log(this.rooms);
+            // console.log(this.rooms);
           })
           .catch((error) => {
             console.error("Error fetching rooms:", error);
@@ -433,12 +433,16 @@
             this.joined = true;
 
             break;
+          case "rooms":
+            this.rooms = data.rooms;
+
+            break;
 
           case "new-player":
             this.name = data.name;
             sessionStorage.setItem("playerName", this.name);
             sessionStorage.setItem("roomId", data.roomId);
-            this.fetchRooms();
+            // this.fetchRooms();
             break;
 
           case "start-game":
@@ -474,21 +478,25 @@
             break;
           case "update-letters":
             this.letters = data.letters;
+            console.log(this.letters);
             break;
           case "update-score":
-            // console.log(data.scores);
+            console.log(data.scores);
             this.scores = data.scores;
             break;
           case "remaining-letters":
             this.remainingLetters = data.remainingLetters;
 
             break;
-          case "game-created":
-            this.fetchRooms();
-            break;
+          // case "game-created":
+          //   this.fetchRooms();
+          //   break;
 
           case "error":
             this.errorMessage = data.message;
+            break;
+          case "connection-success":
+            console.log("connected");
             break;
         }
       },
@@ -517,10 +525,10 @@
       this.socket = new WebSocket(process.env.VUE_APP_BASE_URL);
       this.socket.onmessage = this.sockets.handleMessage.bind(this);
 
-      this.socket.onopen = () => {};
+      // this.socket.onopen = () => {};
     },
     mounted() {
-      this.fetchRooms();
+      // this.fetchRooms();
     },
   };
 </script>
