@@ -122,10 +122,25 @@
       />
     </div>
     <div v-else class="table-container">
-      <div v-if="gameFinished">
-        Winner is
-        <div v-for="player in findHighestScorers(scores)" :key="player">
-          {{ player }}
+      <div v-if="gameFinished" class="winner-celebration">
+        <div class="winner-content">
+          <p class="winner-title">{{ winnerLabel }}</p>
+          <div class="winner-names">
+            <div v-for="player in highestScorers" :key="player" class="winner-name">
+              {{ player }}
+            </div>
+          </div>
+          <p v-if="winnerScore !== null" class="winner-score">
+            Final score: {{ winnerScore }}
+          </p>
+        </div>
+        <div v-if="showCelebration" class="fireworks" aria-hidden="true">
+          <span class="firework firework-1"></span>
+          <span class="firework firework-2"></span>
+          <span class="firework firework-3"></span>
+          <span class="firework firework-4"></span>
+          <span class="firework firework-5"></span>
+          <span class="firework firework-6"></span>
         </div>
       </div>
       <ScrabbleBoard
@@ -248,6 +263,8 @@
         selectedLanguage: "hu_HU",
         originalTitle: document.title,
         flashingInterval: null,
+        showCelebration: false,
+        celebrationTimer: null,
       };
     },
     components: {
@@ -262,6 +279,19 @@
       },
       sessionName() {
         return sessionStorage.getItem("playerName");
+      },
+      highestScorers() {
+        return this.findHighestScorers(this.scores);
+      },
+      winnerLabel() {
+        return this.highestScorers.length > 1 ? "Winners" : "Winner";
+      },
+      winnerScore() {
+        const values = Object.values(this.scores || {});
+        if (!values.length) {
+          return null;
+        }
+        return Math.max(...values);
       },
     },
     methods: {
@@ -284,7 +314,6 @@
       },
       joinGame() {
         if (this.selectedRoom) {
-          console.log(this.selectedRoom);
           this.socket.send(
             JSON.stringify({
               type: "join",
@@ -422,6 +451,13 @@
         this.flashingInterval = null;
         document.title = this.originalTitle;
       },
+      triggerWinnerCelebration() {
+        this.showCelebration = true;
+        clearTimeout(this.celebrationTimer);
+        this.celebrationTimer = setTimeout(() => {
+          this.showCelebration = false;
+        }, 2600);
+      },
     },
     sockets: {
       handleMessage(event) {
@@ -520,12 +556,21 @@
           this.stopFlashingTab();
         }
       },
+      gameFinished(newValue) {
+        if (newValue) {
+          this.triggerWinnerCelebration();
+        }
+      },
     },
     created() {
       this.socket = new WebSocket(process.env.VUE_APP_BASE_URL);
       this.socket.onmessage = this.sockets.handleMessage.bind(this);
 
       // this.socket.onopen = () => {};
+    },
+    beforeUnmount() {
+      this.stopFlashingTab();
+      clearTimeout(this.celebrationTimer);
     },
     mounted() {
       // this.fetchRooms();
@@ -627,6 +672,167 @@
     color: #94a3b8;
     font-size: 14px;
     margin: 8px 0;
+  }
+
+  .winner-celebration {
+    position: relative;
+    margin: 14px auto 10px;
+    width: min(92vw, 520px);
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    background:
+      radial-gradient(circle at 18% 18%, rgba(245, 158, 11, 0.25), transparent 40%),
+      radial-gradient(circle at 85% 15%, rgba(34, 197, 94, 0.2), transparent 40%),
+      linear-gradient(145deg, rgba(22, 31, 49, 0.95), rgba(16, 24, 38, 0.9));
+    box-shadow:
+      0 12px 34px rgba(0, 0, 0, 0.35),
+      inset 0 0 32px rgba(245, 158, 11, 0.08);
+  }
+
+  .winner-content {
+    padding: 18px 18px 16px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .winner-title {
+    margin: 0;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #fcd34d;
+    font-weight: 800;
+  }
+
+  .winner-names {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .winner-name {
+    font-size: clamp(20px, 4.2vw, 30px);
+    font-weight: 800;
+    color: #f8fafc;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(71, 85, 105, 0.45);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .winner-score {
+    margin: 12px 0 0;
+    color: #e2e8f0;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+  }
+
+  .fireworks {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .firework {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(0.2);
+    animation: firework-burst 900ms ease-out forwards;
+  }
+
+  .firework-1 {
+    top: 18%;
+    left: 14%;
+    background: #f59e0b;
+  }
+
+  .firework-2 {
+    top: 28%;
+    left: 82%;
+    background: #f43f5e;
+    animation-delay: 120ms;
+  }
+
+  .firework-3 {
+    top: 12%;
+    left: 52%;
+    background: #22c55e;
+    animation-delay: 220ms;
+  }
+
+  .firework-4 {
+    top: 62%;
+    left: 76%;
+    background: #38bdf8;
+    animation-delay: 320ms;
+  }
+
+  .firework-5 {
+    top: 66%;
+    left: 24%;
+    background: #facc15;
+    animation-delay: 420ms;
+  }
+
+  .firework-6 {
+    top: 40%;
+    left: 50%;
+    background: #fb7185;
+    animation-delay: 500ms;
+  }
+
+  @keyframes firework-burst {
+    0% {
+      opacity: 0;
+      box-shadow: 0 0 0 0 currentColor;
+      transform: translate(-50%, -50%) scale(0.15);
+    }
+    18% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(0.9);
+      box-shadow:
+        0 -18px 0 0 currentColor,
+        12px -12px 0 0 currentColor,
+        18px 0 0 0 currentColor,
+        12px 12px 0 0 currentColor,
+        0 18px 0 0 currentColor,
+        -12px 12px 0 0 currentColor,
+        -18px 0 0 0 currentColor,
+        -12px -12px 0 0 currentColor;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(1.35);
+      box-shadow:
+        0 -32px 0 -2px currentColor,
+        22px -22px 0 -2px currentColor,
+        32px 0 0 -2px currentColor,
+        22px 22px 0 -2px currentColor,
+        0 32px 0 -2px currentColor,
+        -22px 22px 0 -2px currentColor,
+        -32px 0 0 -2px currentColor,
+        -22px -22px 0 -2px currentColor;
+    }
+  }
+
+  @media (max-width: 632px) {
+    .winner-content {
+      padding: 14px 12px;
+    }
+
+    .winner-name {
+      font-size: clamp(17px, 5vw, 24px);
+      padding: 7px 11px;
+    }
   }
 
   .form-group {
