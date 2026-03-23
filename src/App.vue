@@ -601,7 +601,7 @@
     --points-font: 10px;
     --board-padding: 8px;
     --board-radius: 16px;
-    --table-padding: 40px;
+    --table-padding: 12px;
   }
 
   @media (max-width: 632px) {
@@ -660,6 +660,7 @@
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(155, 171, 194, 0.08);
     /* padding: var(--table-padding); */
+    padding: var(--table-padding) 0;
     border-radius: 24px;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
     color: #e2e8f0;

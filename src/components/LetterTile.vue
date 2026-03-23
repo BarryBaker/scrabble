@@ -9,6 +9,7 @@
     }"
     :draggable="isDraggable"
     @dragstart="handleDragStart"
+    @dragend="handleDragEnd"
     @touchstart="handleTouchStart"
     @touchmove="handleTouchMove"
     @touchend="handleTouchEnd"
@@ -60,9 +61,25 @@
     },
     computed: {},
     methods: {
+      handleInvalidDrop(event) {
+        if (event.detail?.id == this.id) {
+          this.isDragging = false;
+        }
+      },
       handleDragStart(event) {
+        // Delay hiding the source tile until after the drag image is captured.
+        setTimeout(() => {
+          this.isDragging = true;
+        }, 0);
+
         event.dataTransfer.setData("id", this.id);
         event.dataTransfer.setData("isWild", this.letter === "");
+      },
+      handleDragEnd(event) {
+        // Reset only when no valid drop happened.
+        if (event.dataTransfer?.dropEffect === "none") {
+          this.isDragging = false;
+        }
       },
       handleTouchStart() {
         if (!this.isDraggable) return;
@@ -109,11 +126,22 @@
           const ghostSize = 50; // Approximate size, centering on finger
           this.dragGhost.style.left = touch.clientX - ghostSize / 2 + "px";
           this.dragGhost.style.top = touch.clientY - ghostSize / 2 + "px";
+
+          // Broadcast the current touch-hovered board cell for live highlighting.
+          const element = document.elementFromPoint(touch.clientX, touch.clientY);
+          let cellElement = element;
+          while (cellElement && !cellElement.classList.contains("cell")) {
+            cellElement = cellElement.parentElement;
+          }
+
+          window.dispatchEvent(
+            new CustomEvent("touchdragover", {
+              detail: { cellElement },
+            }),
+          );
         }
       },
       handleTouchEnd(event) {
-        this.isDragging = false;
-
         // Clean up ghost element
         if (this.dragGhost) {
           this.dragGhost.remove();
@@ -142,11 +170,25 @@
             bubbles: true,
           });
           cellElement.dispatchEvent(dropEvent);
+        } else {
+          // Invalid drop: restore the original tile in the rack.
+          this.isDragging = false;
         }
 
         // Clear drag data
         window.dragData = null;
+        window.dispatchEvent(
+          new CustomEvent("touchdragover", {
+            detail: { cellElement: null },
+          }),
+        );
       },
+    },
+    mounted() {
+      window.addEventListener("tile-drop-invalid", this.handleInvalidDrop);
+    },
+    beforeUnmount() {
+      window.removeEventListener("tile-drop-invalid", this.handleInvalidDrop);
     },
   };
 </script>
@@ -226,8 +268,6 @@
   }
 
   .dragging {
-    opacity: 0.5;
-    background: linear-gradient(145deg, #d4a574, #c09060);
-    transform: scale(1.05);
+    visibility: hidden;
   }
 </style>

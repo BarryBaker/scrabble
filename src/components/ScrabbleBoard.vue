@@ -11,8 +11,14 @@
       <div
         v-for="(cell, colIndex) in row"
         :key="colIndex"
-        :class="['cell', cell.text]"
-        @dragover.prevent
+        :class="[
+          'cell',
+          cell.text,
+          isDropTarget(rowIndex, colIndex) ? 'drop-target' : '',
+        ]"
+        :data-row-index="rowIndex"
+        :data-col-index="colIndex"
+        @dragover.prevent="handleDragOver(rowIndex, colIndex)"
         @drop="handleDrop($event, rowIndex, colIndex)"
         @touchdrop="handleTouchDrop($event, rowIndex, colIndex)"
       >
@@ -88,6 +94,10 @@
     },
     data() {
       return {
+        dropTarget: {
+          rowIndex: null,
+          colIndex: null,
+        },
         wildModal: {
           visible: false,
           rowIndex: null,
@@ -111,6 +121,40 @@
       },
     },
     methods: {
+      isDropTarget(rowIndex, colIndex) {
+        return (
+          this.dropTarget.rowIndex === rowIndex &&
+          this.dropTarget.colIndex === colIndex
+        );
+      },
+      setDropTarget(rowIndex, colIndex) {
+        this.dropTarget.rowIndex = rowIndex;
+        this.dropTarget.colIndex = colIndex;
+      },
+      clearDropTarget() {
+        this.dropTarget.rowIndex = null;
+        this.dropTarget.colIndex = null;
+      },
+      handleDragOver(rowIndex, colIndex) {
+        this.setDropTarget(rowIndex, colIndex);
+      },
+      handleTouchDragOver(event) {
+        const cellElement = event.detail?.cellElement;
+        if (!cellElement) {
+          this.clearDropTarget();
+          return;
+        }
+
+        const rowIndex = Number(cellElement.dataset.rowIndex);
+        const colIndex = Number(cellElement.dataset.colIndex);
+
+        if (Number.isNaN(rowIndex) || Number.isNaN(colIndex)) {
+          this.clearDropTarget();
+          return;
+        }
+
+        this.setDropTarget(rowIndex, colIndex);
+      },
       openWildModal(rowIndex, colIndex, tileId) {
         this.wildModal.visible = true;
         this.wildModal.rowIndex = rowIndex;
@@ -173,8 +217,19 @@
         }
       },
       handleDrop(event, rowIndex, colIndex) {
+        this.clearDropTarget();
         const id = event.dataTransfer.getData("id");
         const isWild = event.dataTransfer.getData("isWild") === "true";
+        const targetCell = this.board?.[rowIndex]?.[colIndex];
+
+        if (targetCell?.letter != null) {
+          window.dispatchEvent(
+            new CustomEvent("tile-drop-invalid", {
+              detail: { id },
+            }),
+          );
+          return;
+        }
 
         if (isWild) {
           this.openWildModal(rowIndex, colIndex, id);
@@ -192,12 +247,23 @@
         // Emit the updated cell information to the parent component
       },
       handleTouchDrop(event, rowIndex, colIndex) {
+        this.clearDropTarget();
         // Get drag data from the custom event detail
         const dragData = event.detail?.dragData;
         if (!dragData) return;
 
         const id = dragData.id;
         const isWild = dragData.isWild;
+        const targetCell = this.board?.[rowIndex]?.[colIndex];
+
+        if (targetCell?.letter != null) {
+          window.dispatchEvent(
+            new CustomEvent("tile-drop-invalid", {
+              detail: { id },
+            }),
+          );
+          return;
+        }
 
         if (isWild) {
           this.openWildModal(rowIndex, colIndex, id);
@@ -213,6 +279,18 @@
           }),
         );
       },
+    },
+    mounted() {
+      window.addEventListener("dragend", this.clearDropTarget);
+      window.addEventListener("drop", this.clearDropTarget);
+      window.addEventListener("touchdragover", this.handleTouchDragOver);
+      window.addEventListener("touchend", this.clearDropTarget);
+    },
+    beforeUnmount() {
+      window.removeEventListener("dragend", this.clearDropTarget);
+      window.removeEventListener("drop", this.clearDropTarget);
+      window.removeEventListener("touchdragover", this.handleTouchDragOver);
+      window.removeEventListener("touchend", this.clearDropTarget);
     },
   };
 </script>
@@ -333,6 +411,12 @@
 
   .highlight {
     background-color: rgba(99, 102, 241, 0.3);
+  }
+
+  .drop-target {
+    box-shadow: inset 0 0 0 3px rgba(250, 204, 21, 0.95),
+      0 0 12px rgba(250, 204, 21, 0.55);
+    filter: brightness(1.08);
   }
 
   .fade-enter-active,
