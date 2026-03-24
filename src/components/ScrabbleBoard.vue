@@ -166,7 +166,15 @@
           this.$refs.wildInput?.focus();
         });
       },
-      closeWildModal() {
+      closeWildModal(restoreTile = true) {
+        if (restoreTile && this.wildModal.tileId) {
+          window.dispatchEvent(
+            new CustomEvent("tile-drop-invalid", {
+              detail: { id: this.wildModal.tileId },
+            }),
+          );
+        }
+
         this.wildModal.visible = false;
         this.wildModal.rowIndex = null;
         this.wildModal.colIndex = null;
@@ -200,7 +208,7 @@
           }),
         );
 
-        this.closeWildModal();
+        this.closeWildModal(false);
       },
       getCellText(cell) {
         switch (cell) {
