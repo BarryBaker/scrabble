@@ -6,9 +6,12 @@
         :placeholder="placeholder"
         class="input-field"
       />
-      <button @click="confirmInput" class="btn btn-primary">
-        {{ buttonText }}
-      </button>
+      <div class="button-row">
+        <button @click="confirmInput" class="btn btn-primary">
+          {{ buttonText }}
+        </button>
+        <button @click="cancelInput" class="btn btn-cancel">Cancel</button>
+      </div>
     </div>
   </div>
 </template>
@@ -37,6 +40,9 @@
     methods: {
       confirmInput() {
         this.$emit("confirm", this.inputValue);
+      },
+      cancelInput() {
+        this.$emit("cancel");
       },
     },
   };
@@ -103,6 +109,29 @@
   .text-input-container .btn-primary:hover {
     background: linear-gradient(135deg, #4f46e5, #7c3aed);
     box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    transform: translateY(-1px);
+  }
+  .text-input-container .button-row {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+  .text-input-container .btn-cancel {
+    background: rgba(100, 116, 139, 0.3);
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: "Inter", sans-serif;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    width: 100%;
+  }
+  .text-input-container .btn-cancel:hover {
+    background: rgba(100, 116, 139, 0.5);
+    color: #e2e8f0;
     transform: translateY(-1px);
   }
 </style>

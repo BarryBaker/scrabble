@@ -1,9 +1,9 @@
 <template>
   <div id="app">
     <div v-if="!joined" class="join-container">
-      <div v-if="sessionName" class="reconnect-container">
+      <div v-if="activeRoom.roomName && activeRoom.player" class="reconnect-container">
         <button @click="reconnect" class="btn btn-reconnect">
-          <i class="fas fa-sync-alt"></i> Reconnect
+          <i class="fas fa-sync-alt"></i> Reconnect to {{ activeRoom.roomName }} as {{ activeRoom.player }} 
         </button>
       </div>
       <div><p>Create Room or Join an open Room</p></div>
@@ -119,6 +119,7 @@
         placeholder="Enter your name"
         buttonText="Join"
         @confirm="confirmName"
+        @cancel="closeNameInput"
       />
     </div>
     <div v-else class="table-container">
@@ -277,8 +278,8 @@
       isActivePlayer() {
         return this.currentTurnPlayer === this.name;
       },
-      sessionName() {
-        return sessionStorage.getItem("playerName");
+      activeRoom() {
+        return { roomName: sessionStorage.getItem("roomName") , player: sessionStorage.getItem("playerName") };
       },
       highestScorers() {
         return this.findHighestScorers(this.scores);
@@ -338,6 +339,9 @@
         this.showNameInput = false;
         this.joinGame();
         // }
+      },
+      closeNameInput() {
+        this.showNameInput = false;
       },
       passTurn() {
         this.socket.send(
@@ -478,6 +482,7 @@
             this.name = data.name;
             sessionStorage.setItem("playerName", this.name);
             sessionStorage.setItem("roomId", data.roomId);
+              sessionStorage.setItem("roomName", data.roomName);
             // this.fetchRooms();
             break;
 
@@ -491,6 +496,7 @@
             this.gameFinished = true;
             sessionStorage.removeItem("playerName");
             sessionStorage.removeItem("roomId");
+             sessionStorage.removeItem("roomName");
             // this.letters = data.letters;
 
             break;
@@ -644,7 +650,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 380px;
+    /* width: 100%;
+    min-width: 300px;
+    max-width: 500px; */
+    /* width: 450px;
+    min-width: 450px; */
   }
 
   .join-container p {
@@ -1120,6 +1130,7 @@
     left: 0;
     right: 0;
     bottom: 0;
+    padding: 16px;
     background-color: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(8px);
     display: flex;
@@ -1131,36 +1142,71 @@
   .create-room-container {
     background: linear-gradient(145deg, #1e293b, #0f172a);
     border: 1px solid rgba(148, 163, 184, 0.12);
-    /* padding: 32px; */
+    padding: 24px;
     border-radius: 20px;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    min-width: 340px;
+    align-items: stretch;
+    width: min(100%, 760px);
+    max-width: 760px;
+    gap: 14px;
     color: #e2e8f0;
   }
 
   .language-options {
-    display: flex;
-    align-items: center;
-    margin-bottom: 16px;
-    gap: 8px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+    width: 100%;
   }
 
-  .language-options label {
+  .language-options label,
+  .player-options label {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    justify-content: flex-start;
+    gap: 10px;
     color: #cbd5e1;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     cursor: pointer;
+    width: 100%;
+    min-height: 48px;
+    border-radius: 12px;
+    padding: 10px 12px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: rgba(30, 41, 59, 0.75);
+    transition: all 0.2s ease;
   }
 
-  .language-options input[type="radio"] {
-    accent-color: #6366f1;
+  .language-options input[type="radio"],
+  .player-options input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .language-options input[type="radio"] + label:hover,
+  .player-options input[type="radio"] + label:hover {
+    border-color: rgba(129, 140, 248, 0.55);
+    background: rgba(51, 65, 85, 0.75);
+  }
+
+  .language-options input[type="radio"]:checked + label,
+  .player-options input[type="radio"]:checked + label {
+    border-color: rgba(99, 102, 241, 0.95);
+    background: linear-gradient(
+      135deg,
+      rgba(99, 102, 241, 0.22),
+      rgba(139, 92, 246, 0.2)
+    );
+    color: #eef2ff;
+    box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.45);
   }
 
   .flag-icon {
@@ -1171,21 +1217,18 @@
   }
 
   .player-options {
-    display: flex;
-    align-items: center;
-    margin-bottom: 16px;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    width: 100%;
   }
 
-  .player-options label {
-    color: #cbd5e1;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
+  .create-room-container .btn {
+    margin: 0;
   }
 
-  .player-options input[type="radio"] {
-    accent-color: #6366f1;
+  .create-room-container .btn-cancel {
+    margin-top: -2px;
   }
 
   .btn-cancel {
@@ -1198,5 +1241,18 @@
   .btn-cancel:hover {
     background: rgba(100, 116, 139, 0.5);
     color: #e2e8f0;
+  }
+
+  @media (max-width: 632px) {
+    .create-room-container {
+      padding: 18px;
+      border-radius: 16px;
+      gap: 12px;
+    }
+
+    .language-options,
+    .player-options {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

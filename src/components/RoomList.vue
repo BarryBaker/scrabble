@@ -1,28 +1,37 @@
 <template>
   <div class="room-container">
+    <p v-if="emptyRooms.length>0"> Rooms</p>
+    <!-- <div v-if="emptyRooms.length" class="room-header" aria-hidden="true">
+      <span class="header-flag">Flag</span>
+      <span class="header-name">Room Name</span>
+      <div class="header-slots">
+        <span v-for="slot in slotHeaders" :key="slot" class="header-slot">
+          {{ slot }}
+        </span>
+      </div>
+    </div> -->
     <div
-      v-for="room of empthyRooms"
+      v-for="room of emptyRooms"
       :key="room.roomId"
-      :class="['room-card', { selected: selectedRoom === room.roomId }]"
+      :class="['room-row', { selected: selectedRoom === room.roomId }]"
       @click="selectRoom(room.roomId)"
     >
-      <h3>{{ room.roomName }}</h3>
-      <div class="language-flag">
+      <div class="room-flag">
         <img
           :src="getFlagIcon(room.language)"
           :alt="room.language"
           class="flag-icon"
         />
       </div>
-      <p>
-        {{ room.players.length }} out of {{ room.requiredPlayers }} players
-        joined.
-      </p>
-
-      <div class="players">
-        <span v-for="player of room.players" :key="player" class="player">
-          {{ player }},
-        </span>
+      <div class="room-name">{{ room.roomName }}</div>
+      <div class="player-slots">
+        <div
+          v-for="(slotPlayer, index) in getPlayerSlots(room)"
+          :key="`${room.roomId}-${index}`"
+          :class="['slot', { filled: !!slotPlayer }]"
+        >
+          {{ slotPlayer || "" }}
+        </div>
       </div>
     </div>
   </div>
@@ -47,6 +56,12 @@
       selectRoom(id) {
         this.$emit("select-room", id); // Emit selected room ID to parent
       },
+      getPlayerSlots(room) {
+        const requiredPlayers = Number(room.requiredPlayers) || 0;
+        return Array.from({ length: requiredPlayers }, (_, index) => {
+          return room.players[index] || "";
+        });
+      },
       getFlagIcon(language) {
         switch (language) {
           case "en_GB":
@@ -61,74 +76,189 @@
       },
     },
     computed: {
-      empthyRooms() {
+      emptyRooms() {
         if (!Array.isArray(this.rooms)) {
           return []; // Return an empty array if 'rooms' is undefined or null
         }
         return this.rooms.filter((r) => r.players.length < r.requiredPlayers);
+      },
+      slotHeaders() {
+        const maxSlots = this.emptyRooms.reduce((max, room) => {
+          return Math.max(max, Number(room.requiredPlayers) || 0);
+        }, 0);
+        return Array.from({ length: maxSlots }, (_, index) => {
+          return `Player ${index + 1}`;
+        });
       },
     },
   };
 </script>
 
 <style scoped>
-  .room-card {
-    background: rgba(30, 41, 59, 0.6);
-    border: 1px solid rgba(148, 163, 184, 0.1);
-    border-radius: 14px;
-    padding: 16px;
-    width: 220px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    font-family: "Inter", sans-serif;
-    margin: 8px auto;
+  .room-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+ .room-container p {
+    color: #94a3b8;
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  /* .room-header {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 34px minmax(120px, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 0 12px;
+    color: #93c5fd;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  } */
+
+  .header-slots {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .header-slot {
+    min-width: 84px;
+    text-align: center;
+  }
+
+  .room-row {
+    width: 100%;
+    /* display: grid; */
+    /* grid-template-columns: 34px minmax(60px, 1fr) auto; */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: rgba(30, 41, 59, 0.52);
     transition: all 0.2s ease;
     cursor: pointer;
   }
 
-  .room-card:hover {
-    background: rgba(30, 41, 59, 0.8);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  .room-row:hover {
+    border-color: rgba(148, 163, 184, 0.32);
+    background: rgba(30, 41, 59, 0.7);
   }
 
-  .room-card h3 {
-    font-size: 1.1rem;
-    color: #e2e8f0;
-    margin: 0 0 8px 0;
-    font-weight: 600;
+  .room-row.selected {
+    border-color: rgba(99, 102, 241, 0.6);
+    background: rgba(99, 102, 241, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(129, 140, 248, 0.35);
   }
 
-  .room-card p {
-    font-size: 0.85rem;
-    color: #94a3b8;
-    margin: 4px 0;
-  }
-
-  .room-card .players {
-    display: block;
-    margin-top: 10px;
-    color: #a78bfa;
-    font-size: 0.85rem;
-    font-weight: 500;
-  }
-
-  .room-container {
+  .room-flag {
+    width: 28px;
+    height: 30px;
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
     justify-content: center;
-    gap: 10px;
   }
 
-  .room-card.selected {
-    background: rgba(99, 102, 241, 0.15);
-    border-color: rgba(99, 102, 241, 0.4);
-    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.2);
+  .room-name {
+    margin: 0;
+    color: #e2e8f0;
+    font-size: 80%;
+    /* font-weight: 600; */
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    /* text-overflow: ellipsis;
+    min-width: 0;
+    flex-shrink: 1; */
+  }
+
+  .player-slots {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3px;
+  }
+
+  .slot {
+    min-width: 50px;
+    height: 30px;
+    padding: 0 10px;
+    border-radius: 7px;
+    border: 1px dashed rgba(148, 163, 184, 0.34);
+    background: rgba(15, 23, 42, 0.44);
+    color: rgba(148, 163, 184, 0.45);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .slot.filled {
+    border-style: solid;
+    border-color: rgba(56, 189, 248, 0.38);
+    color: #dbeafe;
+    background: rgba(14, 116, 144, 0.24);
   }
 
   .flag-icon {
-    width: 22px;
-    height: 22px;
-    margin-bottom: 8px;
+    width: 28px;
+    height: 20px;
     border-radius: 3px;
+    object-fit: cover;
+  }
+
+  @media (max-width: 632px) {
+    .room-header {
+      grid-template-columns: 28px minmax(90px, 1fr);
+      gap: 10px;
+    }
+
+    .header-slots {
+      grid-column: 1 / -1;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      padding-top: 4px;
+    }
+
+    .header-slot {
+      min-width: 76px;
+    }
+
+    .room-row {
+      grid-template-columns: 28px minmax(90px, 1fr);
+      gap: 10px;
+    }
+
+    .player-slots {
+      grid-column: 1 / -1;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      padding-top: 4px;
+    }
+
+    .slot {
+      min-width: 76px;
+      height: 28px;
+      font-size: 11px;
+    }
   }
 </style>
