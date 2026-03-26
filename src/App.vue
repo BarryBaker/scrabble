@@ -8,8 +8,11 @@
       </div>
       <div><p>Create Room or Join an open Room</p></div>
       <div class="button-group">
-        <button @click="createRoom(true)" class="btn btn-secondary">
+        <button @click="createRoom(true,'en_GB')" class="btn btn-secondary">
           Play computer (ENG)
+        </button>
+         <button @click="createRoom(true,'nl_NL')" class="btn btn-secondary">
+          Play computer (NL)
         </button>
       </div>
       <div class="button-group">
@@ -302,12 +305,12 @@
       closeCreateRoom() {
         this.showCreateRoomInput = false;
       },
-      createRoom(bot) {
+      createRoom(bot, bot_lang = null) {
         this.socket.send(
           JSON.stringify({
             type: bot ? "create-solo-game" : "create-game",
             playerCnt: Number(this.requiredPlayers),
-            lang: this.selectedLanguage,
+            lang: bot ? bot_lang : this.selectedLanguage,
             name: this.newRoomName,
           }),
         );
@@ -886,9 +889,10 @@
   /* Button styles */
   .button-group {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     width: 100%;
     margin-bottom: 12px;
+    gap: 12px;
   }
 
   .btn {
