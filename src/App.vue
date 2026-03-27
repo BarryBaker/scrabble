@@ -1,25 +1,58 @@
 <template>
   <div id="app">
-    <div v-if="!joined" class="join-container">
-      <div v-if="activeRoom.roomName && activeRoom.player" class="reconnect-container">
-        <button @click="reconnect" class="btn btn-reconnect">
-          <i class="fas fa-sync-alt"></i> Reconnect to {{ activeRoom.roomName }} as {{ activeRoom.player }} 
-        </button>
+    <div v-if="!joined" class="landing-page">
+      <SiteHeader />
+
+      <!-- Reconnect banner -->
+      <div v-if="activeRoom.roomName && activeRoom.player" class="reconnect-banner">
+        <div class="reconnect-inner">
+          <button @click="reconnect" class="btn btn-reconnect">
+            <i class="fas fa-sync-alt"></i> Reconnect to {{ activeRoom.roomName }} as {{ activeRoom.player }}
+          </button>
+        </div>
       </div>
-      <div><p>Create Room or Join an open Room</p></div>
-      <div class="button-group">
-        <button @click="createRoom(true,'en_GB')" class="btn btn-secondary">
-          Play computer (ENG)
-        </button>
-         <button @click="createRoom(true,'nl_NL')" class="btn btn-secondary">
-          Play computer (NL)
-        </button>
-      </div>
-      <div class="button-group">
-        <button @click="openCreateRoom" class="btn btn-secondary">
-          Create Room
-        </button>
-      </div>
+
+      <!-- Hero Section -->
+      <section class="hero">
+        <div class="hero-content">
+          <h1 class="hero-title">Play Scrabble Online</h1>
+          <p class="hero-subtitle">
+            The classic word game in <strong>English</strong>, <strong>Dutch</strong> and <strong>Hungarian</strong>.
+            Start a solo game in English or Dutch, or create a room and play with others in real time.
+          </p>
+        </div>
+      </section>
+
+      <!-- Quick Play Section -->
+      <section class="section quick-play-section">
+        <div class="section-inner">
+          <h2 class="section-title">Quick Play vs Computer</h2>
+          <p class="section-desc">Jump straight into a solo game in English or Dutch.</p>
+          <div class="quick-play-cards">
+            <div class="qp-card" @click="createRoom(true, 'en_GB')">
+              <img src="./assets/flags/gb.png" alt="English" class="qp-flag" />
+              <span class="qp-lang">English</span>
+              <span class="qp-action">Play now <i class="fas fa-arrow-right"></i></span>
+            </div>
+            <div class="qp-card" @click="createRoom(true, 'nl_NL')">
+              <img src="./assets/flags/nl.png" alt="Dutch" class="qp-flag" />
+              <span class="qp-lang">Dutch</span>
+              <span class="qp-action">Play now <i class="fas fa-arrow-right"></i></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Multiplayer Section -->
+      <section class="section multiplayer-section">
+        <div class="section-inner">
+          <h2 class="section-title">Multiplayer</h2>
+          <p class="section-desc">Create a room and invite friends, or join an open game.</p>
+          <div class="mp-actions">
+            <button @click="openCreateRoom" class="btn btn-create-room">
+              <i class="fas fa-plus"></i> Create Room
+            </button>
+          </div>
 
       <div v-if="showCreateRoomInput" class="create-room-overlay">
         <div class="create-room-container">
@@ -110,12 +143,42 @@
         </div>
       </div>
 
-      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-      <RoomList
-        :rooms="rooms"
-        :selectedRoom="selectedRoom"
-        @select-room="selectRoom"
-      />
+          <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+          <RoomList
+            :rooms="rooms"
+            :selectedRoom="selectedRoom"
+            @select-room="selectRoom"
+          />
+        </div>
+      </section>
+
+      <!-- Features Section -->
+      <section class="section features-section">
+        <div class="section-inner">
+          <h2 class="section-title">Why Play Here?</h2>
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fas fa-globe"></i></div>
+              <h3>3 Languages</h3>
+              <p>Full dictionaries for English, Dutch and Hungarian — including unique letter sets and scoring.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fas fa-users"></i></div>
+              <h3>2–4 Players</h3>
+              <p>Play solo against the computer or create a room for up to 4 players in real time.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+              <h3>Real-Time</h3>
+              <p>WebSocket-powered gameplay — instant turns, live board updates, no page reloads.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SiteFooter />
+
+      <!-- Modals (keep outside sections) -->
       <PlayerTextInput
         v-if="showNameInput"
         :visible="showNameInput"
@@ -234,6 +297,8 @@
   import LetterTile from "./components/LetterTile.vue";
   import RoomList from "./components/RoomList.vue";
   import PlayerTextInput from "./components/PlayerTextInput.vue";
+  import SiteHeader from "./components/SiteHeader.vue";
+  import SiteFooter from "./components/SiteFooter.vue";
 
   import "@fortawesome/fontawesome-free/css/all.css";
   import "@fortawesome/fontawesome-free/js/all.js";
@@ -276,6 +341,8 @@
       LetterTile,
       RoomList,
       PlayerTextInput,
+      SiteHeader,
+      SiteFooter,
     },
     computed: {
       isActivePlayer() {
@@ -642,6 +709,229 @@
     color: #e2e8f0;
   }
 
+  /* ===== Landing Page Layout ===== */
+  .landing-page {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Reconnect banner */
+  .reconnect-banner {
+    width: 100%;
+    padding: 10px 24px;
+    background: rgba(245, 158, 11, 0.1);
+    border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+    margin-top: 60px;
+  }
+
+  .reconnect-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 140px 24px 60px;
+    text-align: center;
+  }
+
+  .hero-content {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .hero-title {
+    font-size: clamp(36px, 6vw, 56px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin: 0 0 20px;
+    background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(16px, 2.2vw, 19px);
+    line-height: 1.65;
+    color: #94a3b8;
+    margin: 0;
+    font-weight: 400;
+  }
+
+  .hero-subtitle strong {
+    color: #f59e0b;
+    font-weight: 600;
+  }
+
+  /* Sections */
+  .section {
+    padding: 48px 24px;
+  }
+
+  .section-inner {
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  .section-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    color: #f1f5f9;
+    text-align: center;
+  }
+
+  .section-desc {
+    color: #64748b;
+    font-size: 15px;
+    text-align: center;
+    margin: 0 0 28px;
+    font-weight: 400;
+  }
+
+  /* Quick Play Cards */
+  .quick-play-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  .qp-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 28px 16px;
+    border-radius: 16px;
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: center;
+  }
+
+  .qp-card:hover {
+    border-color: rgba(245, 158, 11, 0.45);
+    background: rgba(30, 41, 59, 0.9);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  .qp-flag {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+  }
+
+  .qp-lang {
+    font-size: 16px;
+    font-weight: 700;
+    color: #e2e8f0;
+  }
+
+  .qp-action {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f59e0b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+
+  .qp-card:hover .qp-action {
+    opacity: 1;
+  }
+
+  /* Multiplayer Section */
+  .multiplayer-section {
+    padding-top: 20px;
+  }
+
+  .mp-actions {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .btn-create-room {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: "Inter", sans-serif;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-create-room:hover {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+    transform: translateY(-2px);
+  }
+
+  /* Features Section */
+  .features-section {
+    padding-bottom: 60px;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .feature-card {
+    padding: 24px 20px;
+    border-radius: 16px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.08);
+    text-align: center;
+  }
+
+  .feature-icon {
+    width: 44px;
+    height: 44px;
+    margin: 0 auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: rgba(99, 102, 241, 0.12);
+    color: #818cf8;
+    font-size: 18px;
+  }
+
+  .feature-card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: #e2e8f0;
+  }
+
+  .feature-card p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #64748b;
+    margin: 0;
+  }
+
+  /* ===== Original join-container kept for compatibility ===== */
   .join-container {
     background: rgba(30, 41, 59, 0.8);
     backdrop-filter: blur(20px);
@@ -653,11 +943,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* width: 100%;
-    min-width: 300px;
-    max-width: 500px; */
-    /* width: 450px;
-    min-width: 450px; */
   }
 
   .join-container p {
@@ -966,17 +1251,55 @@
     color: white;
     border: none;
     font-size: 13px;
-    padding: 10px 16px;
+    padding: 10px 20px;
     border-radius: 10px;
+    font-weight: 600;
+    font-family: "Inter", sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
   }
 
   .btn-reconnect:hover {
     background: linear-gradient(135deg, #d97706, #dc2626);
     box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+    transform: translateY(-1px);
   }
 
   .btn-reconnect i {
     margin-right: 6px;
+  }
+
+  /* Responsive landing page */
+  @media (max-width: 632px) {
+    .hero {
+      padding: 100px 16px 40px;
+    }
+
+    .section {
+      padding: 32px 16px;
+    }
+
+    .quick-play-cards {
+      grid-template-columns: 1fr;
+      max-width: 320px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      grid-template-columns: 1fr;
+      max-width: 360px;
+      margin: 0 auto;
+    }
+  }
+
+  @media (min-width: 633px) and (max-width: 768px) {
+    .quick-play-cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .features-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 
   /* Error message */
