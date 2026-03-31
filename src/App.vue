@@ -53,6 +53,12 @@
               <i class="fas fa-plus"></i> Create Room
             </button>
           </div>
+          <div v-if="registered" class="registered-row">
+            <p class="registered-message">
+              You already registered in {{ roomName }} as {{ name }}
+            </p>
+            <button @click="leaveRoom" class="btn btn-unjoin">Unjoin</button>
+          </div>
 
       <div v-if="showCreateRoomInput" class="create-room-overlay">
         <div class="create-room-container">
@@ -189,6 +195,9 @@
       />
     </div>
     <div v-else class="table-container">
+      <p v-if="roomCanceled" class="room-canceled-message">
+        {{ roomCanceledPlayerName }} left the game, game is over
+      </p>
       <div v-if="gameFinished" class="winner-celebration">
         <div class="winner-content">
           <p class="winner-title">{{ winnerLabel }}</p>
@@ -307,8 +316,10 @@
     data() {
       return {
         name: null,
+        registered: false,
         joined: false,
         roomId: null,
+        roomName: null,
         players: [],
         scores: [],
         gameStarted: false,
@@ -334,6 +345,8 @@
         flashingInterval: null,
         showCelebration: false,
         celebrationTimer: null,
+        roomCanceled: false,
+        roomCanceledPlayerName: "",
       };
     },
     components: {
@@ -347,6 +360,9 @@
     computed: {
       isActivePlayer() {
         return this.currentTurnPlayer === this.name;
+      },
+      playerName() {
+        return this.name || sessionStorage.getItem("playerName") || "Player";
       },
       activeRoom() {
         return { roomName: sessionStorage.getItem("roomName") , player: sessionStorage.getItem("playerName") };
@@ -383,12 +399,12 @@
         );
         this.showCreateRoomInput = false;
       },
-      joinGame() {
+      joinGame(inputName) {
         if (this.selectedRoom) {
           this.socket.send(
             JSON.stringify({
               type: "join",
-              name: this.name,
+              name: inputName,
               roomId: this.selectedRoom,
             }),
           );
@@ -405,13 +421,27 @@
       },
       confirmName(inputValue) {
         // if (inputValue) {
-        this.name = inputValue;
+        // this.name = inputValue;
         this.showNameInput = false;
-        this.joinGame();
+        this.joinGame(inputValue);
         // }
       },
       closeNameInput() {
         this.showNameInput = false;
+      },
+      leaveRoom() {
+        this.socket.send(
+          JSON.stringify({
+            type: "leave-room",
+          }),
+        );
+        this.registered = false;
+        this.roomId = null;
+        this.roomName = null;
+        this.name = null;
+        sessionStorage.removeItem("roomId");
+        sessionStorage.removeItem("roomName");
+        sessionStorage.removeItem("playerName");
       },
       passTurn() {
         this.socket.send(
@@ -548,6 +578,17 @@
 
             break;
 
+              case "registered":
+            this.registered = true;
+            this.roomId = data.roomId;
+            this.roomName = data.roomName;
+            this.name = data.name;
+           
+            
+          
+            // this.fetchRooms();
+            break;
+
           case "new-player":
             this.name = data.name;
             sessionStorage.setItem("playerName", this.name);
@@ -559,11 +600,24 @@
           case "start-game":
             this.gameStarted = true;
             this.roomId = data.roomId;
+            this.roomCanceled = false;
+            this.roomCanceledPlayerName = "";
 
             break;
           case "end-game":
             this.gameStarted = false;
             this.gameFinished = true;
+            sessionStorage.removeItem("playerName");
+            sessionStorage.removeItem("roomId");
+             sessionStorage.removeItem("roomName");
+            // this.letters = data.letters;
+
+            break;
+              case "room-canceled":
+            this.gameStarted = false;
+            this.roomCanceled = true;
+            this.roomCanceledPlayerName = data.playerName || "A player";
+            // this.gameFinished = true;
             sessionStorage.removeItem("playerName");
             sessionStorage.removeItem("roomId");
              sessionStorage.removeItem("roomName");
@@ -593,7 +647,7 @@
             console.log(this.letters);
             break;
           case "update-score":
-            console.log(data.scores);
+            console.log('scores', data.scores);
             this.scores = data.scores;
             break;
           case "remaining-letters":
@@ -973,6 +1027,17 @@
     margin: 8px 0;
   }
 
+  .room-canceled-message {
+    color: #fecaca !important;
+    background: rgba(239, 68, 68, 0.16);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin: 12px auto 8px;
+    width: fit-content;
+    max-width: calc(100% - 24px);
+  }
+
   .winner-celebration {
     position: relative;
     margin: 14px auto 10px;
@@ -1312,6 +1377,49 @@
     padding: 8px 16px;
     border-radius: 8px;
     border: 1px solid rgba(244, 63, 94, 0.2);
+  }
+
+  .registered-row {
+    max-width: 820px;
+    margin: 0 auto 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .registered-message {
+    color: #cbd5e1;
+    text-align: left;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .btn-unjoin {
+    width: auto;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    background: rgba(239, 68, 68, 0.15);
+    color: #fecaca;
+    border: 1px solid rgba(239, 68, 68, 0.45);
+  }
+
+  .btn-unjoin:hover {
+    background: rgba(239, 68, 68, 0.25);
+    color: #fee2e2;
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.25);
+  }
+
+  @media (max-width: 632px) {
+    .registered-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .registered-message {
+      text-align: center;
+    }
   }
 
   .game-container {
