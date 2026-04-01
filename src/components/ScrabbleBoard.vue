@@ -1,8 +1,21 @@
 <template>
   <div class="player-container">
-    <div class="player" v-for="player of players" :key="player">
-      <div class="player-name">{{ player }}</div>
-      <div class="player-score">{{ scores[player] }}</div>
+    <div class="player-grid">
+      <div
+        v-for="(slot, index) in playerGridSlots"
+        :key="slot?.name ?? `empty-${index}`"
+        :class="['player-slot', `player-slot-${index + 1}`]"
+      >
+        <div v-if="slot" class="player">
+          <div class="player-name">{{ slot.name }}</div>
+          <div class="player-score">{{ scores[slot.name] }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="player-controls">
+      <button class="leave-room-btn" @click="handleTopAction">
+        {{ !gameOn ? "Exit game" : "Leave room" }}
+      </button>
     </div>
   </div>
 
@@ -72,6 +85,25 @@
       </div>
     </div>
   </transition>
+
+  <transition name="fade">
+    <div
+      v-if="leaveModalVisible"
+      class="leave-room-overlay"
+      @click.self="closeLeaveModal"
+    >
+      <div class="leave-room-modal" role="dialog" aria-modal="true">
+        <h3>Leave room?</h3>
+        <p class="leave-room-message">
+          Are you sure you want to leave the room? The game will be finished.
+        </p>
+        <div class="leave-room-actions">
+          <button class="btn btn-primary" @click="confirmLeaveRoom">Yes</button>
+          <button class="btn btn-secondary" @click="closeLeaveModal">No</button>
+        </div>
+      </div>
+    </div>
+  </transition>
 </template>
 
 <script>
@@ -91,6 +123,7 @@
       socket: Object,
       lastPackedids: Array,
       roomId: Number,
+      gameOn: Boolean,
     },
     data() {
       return {
@@ -98,6 +131,7 @@
           rowIndex: null,
           colIndex: null,
         },
+        leaveModalVisible: false,
         wildModal: {
           visible: false,
           rowIndex: null,
@@ -115,6 +149,22 @@
           currentPlayer: this.currentPlayer,
           isActivePlayer: this.isActivePlayer,
         };
+      },
+      playerGridSlots() {
+        const slotMap = {
+          2: [this.players[0], null, this.players[1], null],
+          3: [this.players[0], this.players[1], this.players[2], null],
+          4: [
+            this.players[0],
+            this.players[1],
+            this.players[2],
+            this.players[3],
+          ],
+        };
+
+        return (slotMap[this.players.length] || this.players)
+          .slice(0, 4)
+          .map((player) => (player ? { name: player } : null));
       },
       currentPlayerIndex() {
         return this.players.indexOf(this.currentPlayer);
@@ -154,6 +204,23 @@
         }
 
         this.setDropTarget(rowIndex, colIndex);
+      },
+      openLeaveModal() {
+        this.leaveModalVisible = true;
+      },
+      handleTopAction() {
+        if (!this.gameOn) {
+          this.$emit("exit-finished-game");
+          return;
+        }
+        this.openLeaveModal();
+      },
+      closeLeaveModal() {
+        this.leaveModalVisible = false;
+      },
+      confirmLeaveRoom() {
+        this.closeLeaveModal();
+        this.$emit("leave-room");
       },
       openWildModal(rowIndex, colIndex, tileId) {
         this.wildModal.visible = true;
@@ -315,10 +382,48 @@
 
   .player-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
     font-family: "Inter", sans-serif;
     gap: 6px;
+  }
+
+  .player-grid {
+    display: grid;
+    width: 80%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 14px;
+  }
+
+  .player-slot {
+    /* width: 45%; */
+    /* max-width: 300px; */
+  }
+
+  .player-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 4px;
+  }
+
+  .leave-room-btn {
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    background: rgba(30, 41, 59, 0.55);
+    height: 50%;
+    color: #e2e8f0;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .leave-room-btn:hover {
+    background: rgba(51, 65, 85, 0.8);
+    border-color: rgba(226, 232, 240, 0.55);
   }
 
   .player {
@@ -330,8 +435,7 @@
     background: rgba(67, 92, 132, 0.7);
     border: 1px solid rgba(148, 163, 184, 0.1);
     border-radius: 10px;
-    width: 280px;
-    max-width: 300px;
+    width: 100%;
     transition: all 0.2s ease;
   }
 
@@ -506,5 +610,50 @@
 
   .wild-letter-actions .btn {
     width: 120px;
+  }
+
+  .leave-room-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 210;
+    padding: 20px;
+  }
+
+  .leave-room-modal {
+    width: min(420px, 100%);
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border: 1px solid rgba(148, 163, 184, 0.32);
+    border-radius: 16px;
+    padding: 24px;
+    color: #e2e8f0;
+    text-align: center;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+  }
+
+  .leave-room-modal h3 {
+    margin: 0 0 8px;
+    font-size: 20px;
+  }
+
+  .leave-room-message {
+    margin: 0;
+    color: rgba(226, 232, 240, 0.88);
+    line-height: 1.4;
+  }
+
+  .leave-room-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .leave-room-actions .btn {
+    width: 110px;
   }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div v-if="!joined" class="landing-page">
+    <div v-if="!showGame" class="landing-page">
       <SiteHeader />
 
       <!-- Reconnect banner -->
@@ -53,13 +53,6 @@
               <i class="fas fa-plus"></i> Create Room
             </button>
           </div>
-          <div v-if="registered" class="registered-row">
-            <p class="registered-message">
-              You already registered in {{ roomName }} as {{ name }}
-            </p>
-            <button @click="leaveRoom" class="btn btn-unjoin">Unjoin</button>
-          </div>
-
       <div v-if="showCreateRoomInput" class="create-room-overlay">
         <div class="create-room-container">
           <input
@@ -153,7 +146,10 @@
           <RoomList
             :rooms="rooms"
             :selectedRoom="selectedRoom"
+            :registered="registered"
+            :registeredRoomId="roomId"
             @select-room="selectRoom"
+            @leave-room="leaveRoom"
           />
         </div>
       </section>
@@ -198,7 +194,7 @@
       <p v-if="roomCanceled" class="room-canceled-message">
         {{ roomCanceledPlayerName }} left the game, game is over
       </p>
-      <div v-if="gameFinished" class="winner-celebration">
+      <div v-if="!gameOn" class="winner-celebration">
         <div class="winner-content">
           <p class="winner-title">{{ winnerLabel }}</p>
           <div class="winner-names">
@@ -227,16 +223,19 @@
         :socket="socket"
         :lastPackedids="lastPackedids"
         :roomId="roomId"
+        :gameOn="gameOn"
+        @leave-room="leaveRoom"
+        @exit-finished-game="exitFinishedGame"
       />
 
-      <!-- <p v-if="gameStarted">Game started!</p> -->
-      <p v-if="gameStarted">{{ remainingLetters }} letters remaining</p>
-      <p v-if="gameStarted && isActivePlayer">It's your turn!</p>
-      <p v-if="gameStarted && !isActivePlayer">
+     
+      <p v-if="gameOn">{{ remainingLetters }} letters remaining</p>
+      <p v-if="gameOn && isActivePlayer">It's your turn!</p>
+      <p v-if="gameOn && !isActivePlayer">
         Waiting for {{ currentTurnPlayer }}'s turn...
       </p>
 
-      <div v-if="true || gameStarted" class="letters">
+      <div  class="letters">
         <!-- <h3>Your Letters:</h3> -->
         <div class="letter-row">
           <LetterTile
@@ -245,42 +244,42 @@
             :id="letter.id"
             :letter="letter.letter"
             :points="letter.points"
-            :isDraggable="isActivePlayer"
+            :isDraggable="isActivePlayer && gameOn"
           />
         </div>
       </div>
       <div class="actions">
         <div>
           <button
-            v-if="isActivePlayer && gameStarted"
+            v-if="isActivePlayer && gameOn"
             @click="passTurn"
             class="btn btn-control btn-pass"
           >
             <i class="fas fa-check"></i> Ready
           </button>
           <button
-            v-if="isActivePlayer && gameStarted"
+            v-if="isActivePlayer && gameOn"
             @click="cancelTurn"
             class="btn btn-control btn-cancel"
           >
             <i class="fas fa-times"></i> Cancel
           </button>
           <button
-            v-if="isActivePlayer && gameStarted"
+            v-if="isActivePlayer && gameOn"
             @click="changeAllLetters"
             class="btn btn-control btn-change"
           >
             <i class="fas fa-exchange-alt"></i> Change
           </button>
           <button
-            v-if="isActivePlayer && gameStarted"
+            v-if="isActivePlayer && gameOn"
             @click="shuffle"
             class="btn btn-control btn-shuffle"
           >
             <i class="fas fa-random"></i> Shuffle
           </button>
           <button
-            v-if="gameStarted"
+            v-if="gameOn"
             @click="highlightLastPlacedLetters"
             class="btn btn-control btn-highlight"
           >
@@ -289,7 +288,7 @@
         </div>
         <div>
           <button
-            v-if="isActivePlayer && gameStarted && remainingLetters === 0"
+            v-if="isActivePlayer && gameOn && remainingLetters === 0"
             @click="surrender"
             class="btn btn-control btn-surrender"
           >
@@ -317,13 +316,13 @@
       return {
         name: null,
         registered: false,
-        joined: false,
+        showGame: false,
         roomId: null,
         roomName: null,
         players: [],
         scores: [],
-        gameStarted: false,
-        gameFinished: false,
+        gameOn: false,
+      
         errorMessage: "",
         requiredPlayers: 2, // default valuee
         socket: null,
@@ -435,13 +434,17 @@
             type: "leave-room",
           }),
         );
+        this.exitFinishedGame();
+      },
+      exitFinishedGame() {
+        sessionStorage.removeItem("roomId");
+        sessionStorage.removeItem("roomName");
+        sessionStorage.removeItem("playerName");
         this.registered = false;
         this.roomId = null;
         this.roomName = null;
         this.name = null;
-        sessionStorage.removeItem("roomId");
-        sessionStorage.removeItem("roomName");
-        sessionStorage.removeItem("playerName");
+        this.showGame = false;
       },
       passTurn() {
         this.socket.send(
@@ -570,7 +573,7 @@
         switch (data.type) {
           case "players":
             this.players = data.players;
-            this.joined = true;
+            // this.joined = true;
 
             break;
           case "rooms":
@@ -598,15 +601,16 @@
             break;
 
           case "start-game":
-            this.gameStarted = true;
+            this.gameOn = true;
+            this.showGame = true;
             this.roomId = data.roomId;
             this.roomCanceled = false;
             this.roomCanceledPlayerName = "";
 
             break;
           case "end-game":
-            this.gameStarted = false;
-            this.gameFinished = true;
+            this.gameOn = false;
+         
             sessionStorage.removeItem("playerName");
             sessionStorage.removeItem("roomId");
              sessionStorage.removeItem("roomName");
@@ -614,10 +618,10 @@
 
             break;
               case "room-canceled":
-            this.gameStarted = false;
+            this.gameOn = false;
             this.roomCanceled = true;
             this.roomCanceledPlayerName = data.playerName || "A player";
-            // this.gameFinished = true;
+         
             sessionStorage.removeItem("playerName");
             sessionStorage.removeItem("roomId");
              sessionStorage.removeItem("roomName");
@@ -686,8 +690,8 @@
           this.stopFlashingTab();
         }
       },
-      gameFinished(newValue) {
-        if (newValue) {
+      gameOn(newValue) {
+        if (!newValue) {
           this.triggerWinnerCelebration();
         }
       },

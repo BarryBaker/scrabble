@@ -33,6 +33,11 @@
           {{ slotPlayer || "" }}
         </div>
       </div>
+      <button
+        v-if="registered && registeredRoomId === room.roomId"
+        class="btn-unjoin-inline"
+        @click.stop="$emit('leave-room')"
+      >Unjoin</button>
     </div>
   </div>
 </template>
@@ -48,6 +53,14 @@
         default: () => [],
       },
       selectedRoom: {
+        type: Number,
+        default: null,
+      },
+      registered: {
+        type: Boolean,
+        default: false,
+      },
+      registeredRoomId: {
         type: Number,
         default: null,
       },
@@ -224,6 +237,26 @@
     height: 20px;
     border-radius: 3px;
     object-fit: cover;
+  }
+
+  .btn-unjoin-inline {
+    margin-left: auto;
+    flex-shrink: 0;
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 8px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-unjoin-inline:hover {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.6);
+    color: #fecaca;
   }
 
   @media (max-width: 632px) {
