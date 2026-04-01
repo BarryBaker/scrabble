@@ -415,7 +415,7 @@
         // console.log(this.rooms);
         const selectedRoom = this.rooms.find((room) => room.roomId === id);
 
-        if (selectedRoom) {
+        if (selectedRoom && !this.registered) {
           this.showNameInput = true;
         }
       },
