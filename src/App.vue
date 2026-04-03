@@ -4,10 +4,14 @@
       <SiteHeader />
 
       <!-- Reconnect banner -->
-      <div v-if="activeRoom.roomName && activeRoom.player" class="reconnect-banner">
+      <div
+        v-if="activeRoom.roomName && activeRoom.player"
+        class="reconnect-banner"
+      >
         <div class="reconnect-inner">
           <button @click="reconnect" class="btn btn-reconnect">
-            <i class="fas fa-sync-alt"></i> Reconnect to {{ activeRoom.roomName }} as {{ activeRoom.player }}
+            <i class="fas fa-sync-alt"></i> Reconnect to
+            {{ activeRoom.roomName }} as {{ activeRoom.player }}
           </button>
         </div>
       </div>
@@ -17,8 +21,10 @@
         <div class="hero-content">
           <h1 class="hero-title">Play Scrabble Online</h1>
           <p class="hero-subtitle">
-            The classic word game in <strong>English</strong>, <strong>Dutch</strong> and <strong>Hungarian</strong>.
-            Start a solo game in English or Dutch, or create a room and play with others in real time.
+            The classic word game in <strong>English</strong>,
+            <strong>Dutch</strong> and <strong>Hungarian</strong>. Start a solo
+            game in English or Dutch, or create a room and play with others in
+            real time.
           </p>
         </div>
       </section>
@@ -27,17 +33,23 @@
       <section class="section quick-play-section">
         <div class="section-inner">
           <h2 class="section-title">Quick Play vs Computer</h2>
-          <p class="section-desc">Jump straight into a solo game in English or Dutch.</p>
+          <p class="section-desc">
+            Jump straight into a solo game in English or Dutch.
+          </p>
           <div class="quick-play-cards">
             <div class="qp-card" @click="createRoom(true, 'en_GB')">
               <img src="./assets/flags/gb.png" alt="English" class="qp-flag" />
               <span class="qp-lang">English</span>
-              <span class="qp-action">Play now <i class="fas fa-arrow-right"></i></span>
+              <span class="qp-action"
+                >Play now <i class="fas fa-arrow-right"></i
+              ></span>
             </div>
             <div class="qp-card" @click="createRoom(true, 'nl_NL')">
               <img src="./assets/flags/nl.png" alt="Dutch" class="qp-flag" />
               <span class="qp-lang">Dutch</span>
-              <span class="qp-action">Play now <i class="fas fa-arrow-right"></i></span>
+              <span class="qp-action"
+                >Play now <i class="fas fa-arrow-right"></i
+              ></span>
             </div>
           </div>
         </div>
@@ -47,100 +59,102 @@
       <section class="section multiplayer-section">
         <div class="section-inner">
           <h2 class="section-title">Multiplayer</h2>
-          <p class="section-desc">Create a room and invite friends, or join an open game.</p>
+          <p class="section-desc">
+            Create a room and invite friends, or join an open game.
+          </p>
           <div class="mp-actions">
             <button @click="openCreateRoom" class="btn btn-create-room">
               <i class="fas fa-plus"></i> Create Room
             </button>
           </div>
-      <div v-if="showCreateRoomInput" class="create-room-overlay">
-        <div class="create-room-container">
-          <input
-            v-model="newRoomName"
-            placeholder="Enter Room Name"
-            class="input-field"
-          />
-          <div class="form-group">
-            <label>Language:</label>
-            <div class="language-options">
+          <div v-if="showCreateRoomInput" class="create-room-overlay">
+            <div class="create-room-container">
               <input
-                type="radio"
-                id="lang-en"
-                value="en_GB"
-                v-model="selectedLanguage"
+                v-model="newRoomName"
+                placeholder="Enter Room Name"
+                class="input-field"
               />
-              <label for="lang-en"
-                ><img
-                  src="./assets/flags//gb.png"
-                  alt="English"
-                  class="flag-icon"
-                />
-                English</label
-              >
-              <input
-                type="radio"
-                id="lang-hu"
-                value="hu_HU"
-                v-model="selectedLanguage"
-              />
-              <label for="lang-hu"
-                ><img
-                  src="./assets/flags/hu.png"
-                  alt="Hungarian"
-                  class="flag-icon"
-                />
-                Hungarian</label
-              >
-              <input
-                type="radio"
-                id="lang-nl"
-                value="nl_NL"
-                v-model="selectedLanguage"
-              />
-              <label for="lang-nl"
-                ><img
-                  src="./assets/flags/nl.png"
-                  alt="Dutch"
-                  class="flag-icon"
-                />
-                Dutch</label
-              >
+              <div class="form-group">
+                <label>Language:</label>
+                <div class="language-options">
+                  <input
+                    type="radio"
+                    id="lang-en"
+                    value="en_GB"
+                    v-model="selectedLanguage"
+                  />
+                  <label for="lang-en"
+                    ><img
+                      src="./assets/flags//gb.png"
+                      alt="English"
+                      class="flag-icon"
+                    />
+                    English</label
+                  >
+                  <input
+                    type="radio"
+                    id="lang-hu"
+                    value="hu_HU"
+                    v-model="selectedLanguage"
+                  />
+                  <label for="lang-hu"
+                    ><img
+                      src="./assets/flags/hu.png"
+                      alt="Hungarian"
+                      class="flag-icon"
+                    />
+                    Hungarian</label
+                  >
+                  <input
+                    type="radio"
+                    id="lang-nl"
+                    value="nl_NL"
+                    v-model="selectedLanguage"
+                  />
+                  <label for="lang-nl"
+                    ><img
+                      src="./assets/flags/nl.png"
+                      alt="Dutch"
+                      class="flag-icon"
+                    />
+                    Dutch</label
+                  >
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Number of Players:</label>
+                <div class="player-options">
+                  <input
+                    type="radio"
+                    id="players-2"
+                    value="2"
+                    v-model="requiredPlayers"
+                  />
+                  <label for="players-2">2 Players</label>
+                  <input
+                    type="radio"
+                    id="players-3"
+                    value="3"
+                    v-model="requiredPlayers"
+                  />
+                  <label for="players-3">3 Players</label>
+                  <input
+                    type="radio"
+                    id="players-4"
+                    value="4"
+                    v-model="requiredPlayers"
+                  />
+                  <label for="players-4">4 Players</label>
+                </div>
+              </div>
+              <button @click="createRoom(false)" class="btn btn-primary">
+                Create Room
+              </button>
+              <button @click="closeCreateRoom" class="btn btn-cancel">
+                Cancel
+              </button>
             </div>
           </div>
-          <div class="form-group">
-            <label>Number of Players:</label>
-            <div class="player-options">
-              <input
-                type="radio"
-                id="players-2"
-                value="2"
-                v-model="requiredPlayers"
-              />
-              <label for="players-2">2 Players</label>
-              <input
-                type="radio"
-                id="players-3"
-                value="3"
-                v-model="requiredPlayers"
-              />
-              <label for="players-3">3 Players</label>
-              <input
-                type="radio"
-                id="players-4"
-                value="4"
-                v-model="requiredPlayers"
-              />
-              <label for="players-4">4 Players</label>
-            </div>
-          </div>
-          <button @click="createRoom(false)" class="btn btn-primary">
-            Create Room
-          </button>
-          <button @click="closeCreateRoom" class="btn btn-cancel">
-            Cancel
-          </button>
-        </div>
-      </div>
 
           <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           <RoomList
@@ -162,17 +176,26 @@
             <div class="feature-card">
               <div class="feature-icon"><i class="fas fa-globe"></i></div>
               <h3>3 Languages</h3>
-              <p>Full dictionaries for English, Dutch and Hungarian — including unique letter sets and scoring.</p>
+              <p>
+                Full dictionaries for English, Dutch and Hungarian — including
+                unique letter sets and scoring.
+              </p>
             </div>
             <div class="feature-card">
               <div class="feature-icon"><i class="fas fa-users"></i></div>
               <h3>2–4 Players</h3>
-              <p>Play solo against the computer or create a room for up to 4 players in real time.</p>
+              <p>
+                Play solo against the computer or create a room for up to 4
+                players in real time.
+              </p>
             </div>
             <div class="feature-card">
               <div class="feature-icon"><i class="fas fa-bolt"></i></div>
               <h3>Real-Time</h3>
-              <p>WebSocket-powered gameplay — instant turns, live board updates, no page reloads.</p>
+              <p>
+                WebSocket-powered gameplay — instant turns, live board updates,
+                no page reloads.
+              </p>
             </div>
           </div>
         </div>
@@ -198,7 +221,11 @@
         <div class="winner-content">
           <p class="winner-title">{{ winnerLabel }}</p>
           <div class="winner-names">
-            <div v-for="player in highestScorers" :key="player" class="winner-name">
+            <div
+              v-for="player in highestScorers"
+              :key="player"
+              class="winner-name"
+            >
               {{ player }}
             </div>
           </div>
@@ -228,14 +255,13 @@
         @exit-finished-game="exitFinishedGame"
       />
 
-     
       <p v-if="gameOn">{{ remainingLetters }} letters remaining</p>
       <p v-if="gameOn && isActivePlayer">It's your turn!</p>
       <p v-if="gameOn && !isActivePlayer">
         Waiting for {{ currentTurnPlayer }}'s turn...
       </p>
 
-      <div  class="letters">
+      <div class="letters">
         <!-- <h3>Your Letters:</h3> -->
         <div class="letter-row">
           <LetterTile
@@ -322,7 +348,7 @@
         players: [],
         scores: [],
         gameOn: false,
-      
+
         errorMessage: "",
         requiredPlayers: 2, // default valuee
         socket: null,
@@ -364,7 +390,10 @@
         return this.name || sessionStorage.getItem("playerName") || "Player";
       },
       activeRoom() {
-        return { roomName: sessionStorage.getItem("roomName") , player: sessionStorage.getItem("playerName") };
+        return {
+          roomName: sessionStorage.getItem("roomName"),
+          player: sessionStorage.getItem("playerName"),
+        };
       },
       highestScorers() {
         return this.findHighestScorers(this.scores);
@@ -581,14 +610,12 @@
 
             break;
 
-              case "registered":
+          case "registered":
             this.registered = true;
             this.roomId = data.roomId;
             this.roomName = data.roomName;
             this.name = data.name;
-           
-            
-          
+
             // this.fetchRooms();
             break;
 
@@ -596,7 +623,7 @@
             this.name = data.name;
             sessionStorage.setItem("playerName", this.name);
             sessionStorage.setItem("roomId", data.roomId);
-              sessionStorage.setItem("roomName", data.roomName);
+            sessionStorage.setItem("roomName", data.roomName);
             // this.fetchRooms();
             break;
 
@@ -610,21 +637,21 @@
             break;
           case "end-game":
             this.gameOn = false;
-         
+
             sessionStorage.removeItem("playerName");
             sessionStorage.removeItem("roomId");
-             sessionStorage.removeItem("roomName");
+            sessionStorage.removeItem("roomName");
             // this.letters = data.letters;
 
             break;
-              case "room-canceled":
+          case "room-canceled":
             this.gameOn = false;
             this.roomCanceled = true;
             this.roomCanceledPlayerName = data.playerName || "A player";
-         
+
             sessionStorage.removeItem("playerName");
             sessionStorage.removeItem("roomId");
-             sessionStorage.removeItem("roomName");
+            sessionStorage.removeItem("roomName");
             // this.letters = data.letters;
 
             break;
@@ -651,16 +678,13 @@
             console.log(this.letters);
             break;
           case "update-score":
-            console.log('scores', data.scores);
+            console.log("scores", data.scores);
             this.scores = data.scores;
             break;
           case "remaining-letters":
             this.remainingLetters = data.remainingLetters;
 
             break;
-          // case "game-created":
-          //   this.fetchRooms();
-          //   break;
 
           case "error":
             this.errorMessage = data.message;
@@ -1049,12 +1073,18 @@
     border-radius: 18px;
     overflow: hidden;
     border: 1px solid rgba(251, 191, 36, 0.35);
-    background:
-      radial-gradient(circle at 18% 18%, rgba(245, 158, 11, 0.25), transparent 40%),
-      radial-gradient(circle at 85% 15%, rgba(34, 197, 94, 0.2), transparent 40%),
+    background: radial-gradient(
+        circle at 18% 18%,
+        rgba(245, 158, 11, 0.25),
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at 85% 15%,
+        rgba(34, 197, 94, 0.2),
+        transparent 40%
+      ),
       linear-gradient(145deg, rgba(22, 31, 49, 0.95), rgba(16, 24, 38, 0.9));
-    box-shadow:
-      0 12px 34px rgba(0, 0, 0, 0.35),
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35),
       inset 0 0 32px rgba(245, 158, 11, 0.08);
   }
 
@@ -1167,28 +1197,18 @@
     18% {
       opacity: 1;
       transform: translate(-50%, -50%) scale(0.9);
-      box-shadow:
-        0 -18px 0 0 currentColor,
-        12px -12px 0 0 currentColor,
-        18px 0 0 0 currentColor,
-        12px 12px 0 0 currentColor,
-        0 18px 0 0 currentColor,
-        -12px 12px 0 0 currentColor,
-        -18px 0 0 0 currentColor,
-        -12px -12px 0 0 currentColor;
+      box-shadow: 0 -18px 0 0 currentColor, 12px -12px 0 0 currentColor,
+        18px 0 0 0 currentColor, 12px 12px 0 0 currentColor,
+        0 18px 0 0 currentColor, -12px 12px 0 0 currentColor,
+        -18px 0 0 0 currentColor, -12px -12px 0 0 currentColor;
     }
     100% {
       opacity: 0;
       transform: translate(-50%, -50%) scale(1.35);
-      box-shadow:
-        0 -32px 0 -2px currentColor,
-        22px -22px 0 -2px currentColor,
-        32px 0 0 -2px currentColor,
-        22px 22px 0 -2px currentColor,
-        0 32px 0 -2px currentColor,
-        -22px 22px 0 -2px currentColor,
-        -32px 0 0 -2px currentColor,
-        -22px -22px 0 -2px currentColor;
+      box-shadow: 0 -32px 0 -2px currentColor, 22px -22px 0 -2px currentColor,
+        32px 0 0 -2px currentColor, 22px 22px 0 -2px currentColor,
+        0 32px 0 -2px currentColor, -22px 22px 0 -2px currentColor,
+        -32px 0 0 -2px currentColor, -22px -22px 0 -2px currentColor;
     }
   }
 
