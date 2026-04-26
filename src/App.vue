@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div v-if="!socket">Connecting...</div>
+    <div v-if="!socketConnected">Connecting...</div>
     <div v-if="!showGame" class="landing-page">
       <SiteHeader />
 
@@ -249,6 +249,7 @@
         :currentPlayer="name"
         :board="board"
         :socket="socket"
+        :socketConnected="socketConnected"
         :lastPackedids="lastPackedids"
         :roomId="roomId"
         :gameOn="gameOn"
@@ -353,6 +354,7 @@
         errorMessage: "",
         requiredPlayers: 2, // default valuee
         socket: null,
+        socketConnected: false,
         letters: [],
         allLetters: [],
         board: [],
@@ -411,6 +413,16 @@
       },
     },
     methods: {
+      onSocketOpen() {
+        this.socketConnected = true;
+        this.reconnect();
+      },
+      onSocketClose() {
+        this.socketConnected = false;
+      },
+      onSocketError() {
+        this.socketConnected = false;
+      },
       openCreateRoom() {
         this.showCreateRoomInput = true;
       },
@@ -723,15 +735,21 @@
     },
     created() {
       this.socket = new WebSocket(process.env.VUE_APP_BASE_URL);
+      this.socketConnected = this.socket.readyState === WebSocket.OPEN;
       this.socket.onmessage = this.sockets.handleMessage.bind(this);
-
-      this.socket.onopen = () => {
-        this.reconnect();
-      };
+      this.socket.onopen = () => this.onSocketOpen();
+      this.socket.onclose = () => this.onSocketClose();
+      this.socket.onerror = () => this.onSocketError();
     },
     beforeUnmount() {
       this.stopFlashingTab();
       clearTimeout(this.celebrationTimer);
+      if (this.socket) {
+        this.socket.onopen = null;
+        this.socket.onclose = null;
+        this.socket.onerror = null;
+        this.socket.onmessage = null;
+      }
     },
     mounted() {
       // this.fetchRooms();

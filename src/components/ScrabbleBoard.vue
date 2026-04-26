@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!socket">Connecting...</div>
+  <div v-if="!socketConnected">Connecting...</div>
 
   <template v-else>
     <div class="player-container">
@@ -129,6 +129,7 @@
       isActivePlayer: Boolean,
       board: Array,
       socket: Object,
+      socketConnected: Boolean,
       lastPackedids: Array,
       roomId: Number,
       gameOn: Boolean,
