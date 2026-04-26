@@ -419,6 +419,29 @@
       },
     },
     methods: {
+      connectSocket() {
+        if (
+          this.socket &&
+          (this.socket.readyState === WebSocket.OPEN ||
+            this.socket.readyState === WebSocket.CONNECTING)
+        ) {
+          return;
+        }
+
+        if (this.socket) {
+          this.socket.onopen = null;
+          this.socket.onclose = null;
+          this.socket.onerror = null;
+          this.socket.onmessage = null;
+        }
+
+        this.socket = new WebSocket(process.env.VUE_APP_BASE_URL);
+        this.socketConnected = this.socket.readyState === WebSocket.OPEN;
+        this.socket.onmessage = this.sockets.handleMessage.bind(this);
+        this.socket.onopen = () => this.onSocketOpen();
+        this.socket.onclose = () => this.onSocketClose();
+        this.socket.onerror = () => this.onSocketError();
+      },
       onSocketOpen() {
         this.socketConnected = true;
         this.reconnect();
@@ -522,6 +545,13 @@
         );
       },
       reconnect() {
+        const isSocketOpen =
+          this.socket && this.socket.readyState === WebSocket.OPEN;
+        if (!isSocketOpen) {
+          this.connectSocket();
+          return;
+        }
+
         const storedName = sessionStorage.getItem("playerName");
         const storedRoomId = sessionStorage.getItem("roomId");
         if (storedName && storedRoomId) {
@@ -715,6 +745,11 @@
       },
     },
     watch: {
+      socketConnected(newValue, oldValue) {
+        if (oldValue && !newValue) {
+          this.reconnect();
+        }
+      },
       rooms(newRooms) {
         // Check if rooms array is non-empty, and no room is selected yet
         if (newRooms.length > 0 && this.selectedRoom === null) {
@@ -740,12 +775,7 @@
       },
     },
     created() {
-      this.socket = new WebSocket(process.env.VUE_APP_BASE_URL);
-      this.socketConnected = this.socket.readyState === WebSocket.OPEN;
-      this.socket.onmessage = this.sockets.handleMessage.bind(this);
-      this.socket.onopen = () => this.onSocketOpen();
-      this.socket.onclose = () => this.onSocketClose();
-      this.socket.onerror = () => this.onSocketError();
+      this.connectSocket();
     },
     beforeUnmount() {
       this.stopFlashingTab();
