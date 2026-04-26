@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div></div>
+    <div v-if="!socket">Connecting...</div>
     <div v-if="!showGame" class="landing-page">
       <SiteHeader />
 
