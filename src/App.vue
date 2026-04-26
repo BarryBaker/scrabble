@@ -1,327 +1,333 @@
 <template>
   <div id="app">
     <div v-if="!socketConnected">Connecting...</div>
-    <div v-if="!showGame" class="landing-page">
-      <SiteHeader />
+    <div v-else>
+      <div v-if="!showGame" class="landing-page">
+        <SiteHeader />
 
-      <!-- Reconnect banner -->
-      <div
-        v-if="activeRoom.roomName && activeRoom.player"
-        class="reconnect-banner"
-      >
-        <div class="reconnect-inner">
-          <button @click="reconnect" class="btn btn-reconnect">
-            <i class="fas fa-sync-alt"></i> Reconnect to
-            {{ activeRoom.roomName }} as {{ activeRoom.player }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Hero Section -->
-      <section class="hero">
-        <div class="hero-content">
-          <h1 class="hero-title">Play Scrabble Online</h1>
-          <p class="hero-subtitle">
-            The classic word game in <strong>English</strong>,
-            <strong>Dutch</strong> and <strong>Hungarian</strong>. Start a solo
-            game in English or Dutch, or create a room and play with others in
-            real time.
-          </p>
-        </div>
-      </section>
-
-      <!-- Quick Play Section -->
-      <section class="section quick-play-section">
-        <div class="section-inner">
-          <h2 class="section-title">Quick Play vs Computer</h2>
-          <p class="section-desc">
-            Jump straight into a solo game in English or Dutch.
-          </p>
-          <div class="quick-play-cards">
-            <div class="qp-card" @click="createRoom(true, 'en_GB')">
-              <img src="./assets/flags/gb.png" alt="English" class="qp-flag" />
-              <span class="qp-lang">English</span>
-              <span class="qp-action"
-                >Play now <i class="fas fa-arrow-right"></i
-              ></span>
-            </div>
-            <div class="qp-card" @click="createRoom(true, 'nl_NL')">
-              <img src="./assets/flags/nl.png" alt="Dutch" class="qp-flag" />
-              <span class="qp-lang">Dutch</span>
-              <span class="qp-action"
-                >Play now <i class="fas fa-arrow-right"></i
-              ></span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Multiplayer Section -->
-      <section class="section multiplayer-section">
-        <div class="section-inner">
-          <h2 class="section-title">Multiplayer</h2>
-          <p class="section-desc">
-            Create a room and invite friends, or join an open game.
-          </p>
-          <div class="mp-actions">
-            <button @click="openCreateRoom" class="btn btn-create-room">
-              <i class="fas fa-plus"></i> Create Room
+        <!-- Reconnect banner -->
+        <div
+          v-if="activeRoom.roomName && activeRoom.player"
+          class="reconnect-banner"
+        >
+          <div class="reconnect-inner">
+            <button @click="reconnect" class="btn btn-reconnect">
+              <i class="fas fa-sync-alt"></i> Reconnect to
+              {{ activeRoom.roomName }} as {{ activeRoom.player }}
             </button>
           </div>
-          <div v-if="showCreateRoomInput" class="create-room-overlay">
-            <div class="create-room-container">
-              <input
-                v-model="newRoomName"
-                placeholder="Enter Room Name"
-                class="input-field"
-              />
-              <div class="form-group">
-                <label>Language:</label>
-                <div class="language-options">
-                  <input
-                    type="radio"
-                    id="lang-en"
-                    value="en_GB"
-                    v-model="selectedLanguage"
-                  />
-                  <label for="lang-en"
-                    ><img
-                      src="./assets/flags//gb.png"
-                      alt="English"
-                      class="flag-icon"
-                    />
-                    English</label
-                  >
-                  <input
-                    type="radio"
-                    id="lang-hu"
-                    value="hu_HU"
-                    v-model="selectedLanguage"
-                  />
-                  <label for="lang-hu"
-                    ><img
-                      src="./assets/flags/hu.png"
-                      alt="Hungarian"
-                      class="flag-icon"
-                    />
-                    Hungarian</label
-                  >
-                  <input
-                    type="radio"
-                    id="lang-nl"
-                    value="nl_NL"
-                    v-model="selectedLanguage"
-                  />
-                  <label for="lang-nl"
-                    ><img
-                      src="./assets/flags/nl.png"
-                      alt="Dutch"
-                      class="flag-icon"
-                    />
-                    Dutch</label
-                  >
-                </div>
+        </div>
+
+        <!-- Hero Section -->
+        <section class="hero">
+          <div class="hero-content">
+            <h1 class="hero-title">Play Scrabble Online</h1>
+            <p class="hero-subtitle">
+              The classic word game in <strong>English</strong>,
+              <strong>Dutch</strong> and <strong>Hungarian</strong>. Start a
+              solo game in English or Dutch, or create a room and play with
+              others in real time.
+            </p>
+          </div>
+        </section>
+
+        <!-- Quick Play Section -->
+        <section class="section quick-play-section">
+          <div class="section-inner">
+            <h2 class="section-title">Quick Play vs Computer</h2>
+            <p class="section-desc">
+              Jump straight into a solo game in English or Dutch.
+            </p>
+            <div class="quick-play-cards">
+              <div class="qp-card" @click="createRoom(true, 'en_GB')">
+                <img
+                  src="./assets/flags/gb.png"
+                  alt="English"
+                  class="qp-flag"
+                />
+                <span class="qp-lang">English</span>
+                <span class="qp-action"
+                  >Play now <i class="fas fa-arrow-right"></i
+                ></span>
               </div>
-              <div class="form-group">
-                <label>Number of Players:</label>
-                <div class="player-options">
-                  <input
-                    type="radio"
-                    id="players-2"
-                    value="2"
-                    v-model="requiredPlayers"
-                  />
-                  <label for="players-2">2 Players</label>
-                  <input
-                    type="radio"
-                    id="players-3"
-                    value="3"
-                    v-model="requiredPlayers"
-                  />
-                  <label for="players-3">3 Players</label>
-                  <input
-                    type="radio"
-                    id="players-4"
-                    value="4"
-                    v-model="requiredPlayers"
-                  />
-                  <label for="players-4">4 Players</label>
-                </div>
+              <div class="qp-card" @click="createRoom(true, 'nl_NL')">
+                <img src="./assets/flags/nl.png" alt="Dutch" class="qp-flag" />
+                <span class="qp-lang">Dutch</span>
+                <span class="qp-action"
+                  >Play now <i class="fas fa-arrow-right"></i
+                ></span>
               </div>
-              <button @click="createRoom(false)" class="btn btn-primary">
-                Create Room
-              </button>
-              <button @click="closeCreateRoom" class="btn btn-cancel">
-                Cancel
-              </button>
             </div>
           </div>
+        </section>
 
-          <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-          <RoomList
-            :rooms="rooms"
-            :selectedRoom="selectedRoom"
-            :registered="registered"
-            :registeredRoomId="roomId"
-            @select-room="selectRoom"
-            @leave-room="leaveRoom"
-          />
-        </div>
-      </section>
+        <!-- Multiplayer Section -->
+        <section class="section multiplayer-section">
+          <div class="section-inner">
+            <h2 class="section-title">Multiplayer</h2>
+            <p class="section-desc">
+              Create a room and invite friends, or join an open game.
+            </p>
+            <div class="mp-actions">
+              <button @click="openCreateRoom" class="btn btn-create-room">
+                <i class="fas fa-plus"></i> Create Room
+              </button>
+            </div>
+            <div v-if="showCreateRoomInput" class="create-room-overlay">
+              <div class="create-room-container">
+                <input
+                  v-model="newRoomName"
+                  placeholder="Enter Room Name"
+                  class="input-field"
+                />
+                <div class="form-group">
+                  <label>Language:</label>
+                  <div class="language-options">
+                    <input
+                      type="radio"
+                      id="lang-en"
+                      value="en_GB"
+                      v-model="selectedLanguage"
+                    />
+                    <label for="lang-en"
+                      ><img
+                        src="./assets/flags//gb.png"
+                        alt="English"
+                        class="flag-icon"
+                      />
+                      English</label
+                    >
+                    <input
+                      type="radio"
+                      id="lang-hu"
+                      value="hu_HU"
+                      v-model="selectedLanguage"
+                    />
+                    <label for="lang-hu"
+                      ><img
+                        src="./assets/flags/hu.png"
+                        alt="Hungarian"
+                        class="flag-icon"
+                      />
+                      Hungarian</label
+                    >
+                    <input
+                      type="radio"
+                      id="lang-nl"
+                      value="nl_NL"
+                      v-model="selectedLanguage"
+                    />
+                    <label for="lang-nl"
+                      ><img
+                        src="./assets/flags/nl.png"
+                        alt="Dutch"
+                        class="flag-icon"
+                      />
+                      Dutch</label
+                    >
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Number of Players:</label>
+                  <div class="player-options">
+                    <input
+                      type="radio"
+                      id="players-2"
+                      value="2"
+                      v-model="requiredPlayers"
+                    />
+                    <label for="players-2">2 Players</label>
+                    <input
+                      type="radio"
+                      id="players-3"
+                      value="3"
+                      v-model="requiredPlayers"
+                    />
+                    <label for="players-3">3 Players</label>
+                    <input
+                      type="radio"
+                      id="players-4"
+                      value="4"
+                      v-model="requiredPlayers"
+                    />
+                    <label for="players-4">4 Players</label>
+                  </div>
+                </div>
+                <button @click="createRoom(false)" class="btn btn-primary">
+                  Create Room
+                </button>
+                <button @click="closeCreateRoom" class="btn btn-cancel">
+                  Cancel
+                </button>
+              </div>
+            </div>
 
-      <!-- Features Section -->
-      <section class="section features-section">
-        <div class="section-inner">
-          <h2 class="section-title">Why Play Here?</h2>
-          <div class="features-grid">
-            <div class="feature-card">
-              <div class="feature-icon"><i class="fas fa-globe"></i></div>
-              <h3>3 Languages</h3>
-              <p>
-                Full dictionaries for English, Dutch and Hungarian — including
-                unique letter sets and scoring.
-              </p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-icon"><i class="fas fa-users"></i></div>
-              <h3>2–4 Players</h3>
-              <p>
-                Play solo against the computer or create a room for up to 4
-                players in real time.
-              </p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-icon"><i class="fas fa-bolt"></i></div>
-              <h3>Real-Time</h3>
-              <p>
-                WebSocket-powered gameplay — instant turns, live board updates,
-                no page reloads.
-              </p>
+            <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+            <RoomList
+              :rooms="rooms"
+              :selectedRoom="selectedRoom"
+              :registered="registered"
+              :registeredRoomId="roomId"
+              @select-room="selectRoom"
+              @leave-room="leaveRoom"
+            />
+          </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="section features-section">
+          <div class="section-inner">
+            <h2 class="section-title">Why Play Here?</h2>
+            <div class="features-grid">
+              <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-globe"></i></div>
+                <h3>3 Languages</h3>
+                <p>
+                  Full dictionaries for English, Dutch and Hungarian — including
+                  unique letter sets and scoring.
+                </p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-users"></i></div>
+                <h3>2–4 Players</h3>
+                <p>
+                  Play solo against the computer or create a room for up to 4
+                  players in real time.
+                </p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+                <h3>Real-Time</h3>
+                <p>
+                  WebSocket-powered gameplay — instant turns, live board
+                  updates, no page reloads.
+                </p>
+              </div>
             </div>
           </div>
+        </section>
+
+        <SiteFooter />
+
+        <!-- Modals (keep outside sections) -->
+        <PlayerTextInput
+          v-if="showNameInput"
+          :visible="showNameInput"
+          placeholder="Enter your name"
+          buttonText="Join"
+          @confirm="confirmName"
+          @cancel="closeNameInput"
+        />
+      </div>
+      <div v-else class="table-container">
+        <p v-if="roomCanceled" class="room-canceled-message">
+          {{ roomCanceledPlayerName }} left the game, game is over
+        </p>
+        <div v-if="!gameOn" class="winner-celebration">
+          <div class="winner-content">
+            <p class="winner-title">{{ winnerLabel }}</p>
+            <div class="winner-names">
+              <div
+                v-for="player in highestScorers"
+                :key="player"
+                class="winner-name"
+              >
+                {{ player }}
+              </div>
+            </div>
+            <p v-if="winnerScore !== null" class="winner-score">
+              Final score: {{ winnerScore }}
+            </p>
+          </div>
+          <div v-if="showCelebration" class="fireworks" aria-hidden="true">
+            <span class="firework firework-1"></span>
+            <span class="firework firework-2"></span>
+            <span class="firework firework-3"></span>
+            <span class="firework firework-4"></span>
+            <span class="firework firework-5"></span>
+            <span class="firework firework-6"></span>
+          </div>
         </div>
-      </section>
+        <ScrabbleBoard
+          :players="players"
+          :scores="scores"
+          :currentPlayer="name"
+          :board="board"
+          :socket="socket"
+          :socketConnected="socketConnected"
+          :lastPackedids="lastPackedids"
+          :roomId="roomId"
+          :gameOn="gameOn"
+          @leave-room="leaveRoom"
+          @exit-finished-game="exitFinishedGame"
+        />
 
-      <SiteFooter />
+        <p v-if="gameOn">{{ remainingLetters }} letters remaining</p>
+        <p v-if="gameOn && isActivePlayer">It's your turn!</p>
+        <p v-if="gameOn && !isActivePlayer">
+          Waiting for {{ currentTurnPlayer }}'s turn...
+        </p>
 
-      <!-- Modals (keep outside sections) -->
-      <PlayerTextInput
-        v-if="showNameInput"
-        :visible="showNameInput"
-        placeholder="Enter your name"
-        buttonText="Join"
-        @confirm="confirmName"
-        @cancel="closeNameInput"
-      />
-    </div>
-    <div v-else class="table-container">
-      <p v-if="roomCanceled" class="room-canceled-message">
-        {{ roomCanceledPlayerName }} left the game, game is over
-      </p>
-      <div v-if="!gameOn" class="winner-celebration">
-        <div class="winner-content">
-          <p class="winner-title">{{ winnerLabel }}</p>
-          <div class="winner-names">
-            <div
-              v-for="player in highestScorers"
-              :key="player"
-              class="winner-name"
+        <div class="letters">
+          <!-- <h3>Your Letters:</h3> -->
+          <div class="letter-row">
+            <LetterTile
+              v-for="letter in letters"
+              :key="letter.id"
+              :id="letter.id"
+              :letter="letter.letter"
+              :points="letter.points"
+              :isDraggable="isActivePlayer && gameOn"
+            />
+          </div>
+        </div>
+        <div class="actions">
+          <div>
+            <button
+              v-if="isActivePlayer && gameOn"
+              @click="passTurn"
+              class="btn btn-control btn-pass"
             >
-              {{ player }}
-            </div>
+              <i class="fas fa-check"></i> Ready
+            </button>
+            <button
+              v-if="isActivePlayer && gameOn"
+              @click="cancelTurn"
+              class="btn btn-control btn-cancel"
+            >
+              <i class="fas fa-times"></i> Cancel
+            </button>
+            <button
+              v-if="isActivePlayer && gameOn"
+              @click="changeAllLetters"
+              class="btn btn-control btn-change"
+            >
+              <i class="fas fa-exchange-alt"></i> Change
+            </button>
+            <button
+              v-if="isActivePlayer && gameOn"
+              @click="shuffle"
+              class="btn btn-control btn-shuffle"
+            >
+              <i class="fas fa-random"></i> Shuffle
+            </button>
+            <button
+              v-if="gameOn"
+              @click="highlightLastPlacedLetters"
+              class="btn btn-control btn-highlight"
+            >
+              <i class="fas fa-highlighter"></i> Last
+            </button>
           </div>
-          <p v-if="winnerScore !== null" class="winner-score">
-            Final score: {{ winnerScore }}
-          </p>
-        </div>
-        <div v-if="showCelebration" class="fireworks" aria-hidden="true">
-          <span class="firework firework-1"></span>
-          <span class="firework firework-2"></span>
-          <span class="firework firework-3"></span>
-          <span class="firework firework-4"></span>
-          <span class="firework firework-5"></span>
-          <span class="firework firework-6"></span>
-        </div>
-      </div>
-      <ScrabbleBoard
-        :players="players"
-        :scores="scores"
-        :currentPlayer="name"
-        :board="board"
-        :socket="socket"
-        :socketConnected="socketConnected"
-        :lastPackedids="lastPackedids"
-        :roomId="roomId"
-        :gameOn="gameOn"
-        @leave-room="leaveRoom"
-        @exit-finished-game="exitFinishedGame"
-      />
-
-      <p v-if="gameOn">{{ remainingLetters }} letters remaining</p>
-      <p v-if="gameOn && isActivePlayer">It's your turn!</p>
-      <p v-if="gameOn && !isActivePlayer">
-        Waiting for {{ currentTurnPlayer }}'s turn...
-      </p>
-
-      <div class="letters">
-        <!-- <h3>Your Letters:</h3> -->
-        <div class="letter-row">
-          <LetterTile
-            v-for="letter in letters"
-            :key="letter.id"
-            :id="letter.id"
-            :letter="letter.letter"
-            :points="letter.points"
-            :isDraggable="isActivePlayer && gameOn"
-          />
-        </div>
-      </div>
-      <div class="actions">
-        <div>
-          <button
-            v-if="isActivePlayer && gameOn"
-            @click="passTurn"
-            class="btn btn-control btn-pass"
-          >
-            <i class="fas fa-check"></i> Ready
-          </button>
-          <button
-            v-if="isActivePlayer && gameOn"
-            @click="cancelTurn"
-            class="btn btn-control btn-cancel"
-          >
-            <i class="fas fa-times"></i> Cancel
-          </button>
-          <button
-            v-if="isActivePlayer && gameOn"
-            @click="changeAllLetters"
-            class="btn btn-control btn-change"
-          >
-            <i class="fas fa-exchange-alt"></i> Change
-          </button>
-          <button
-            v-if="isActivePlayer && gameOn"
-            @click="shuffle"
-            class="btn btn-control btn-shuffle"
-          >
-            <i class="fas fa-random"></i> Shuffle
-          </button>
-          <button
-            v-if="gameOn"
-            @click="highlightLastPlacedLetters"
-            class="btn btn-control btn-highlight"
-          >
-            <i class="fas fa-highlighter"></i> Last
-          </button>
-        </div>
-        <div>
-          <button
-            v-if="isActivePlayer && gameOn && remainingLetters === 0"
-            @click="surrender"
-            class="btn btn-control btn-surrender"
-          >
-            <i class="fas fa-stop"></i> Done
-          </button>
+          <div>
+            <button
+              v-if="isActivePlayer && gameOn && remainingLetters === 0"
+              @click="surrender"
+              class="btn btn-control btn-surrender"
+            >
+              <i class="fas fa-stop"></i> Done
+            </button>
+          </div>
         </div>
       </div>
     </div>
