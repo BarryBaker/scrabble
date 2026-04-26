@@ -1,109 +1,116 @@
 <template>
-  <div class="player-container">
-    <div class="player-grid">
-      <div
-        v-for="(slot, index) in playerGridSlots"
-        :key="slot?.name ?? `empty-${index}`"
-        :class="['player-slot', `player-slot-${index + 1}`]"
-      >
-        <div v-if="slot" class="player">
-          <div class="player-name">{{ slot.name }}</div>
-          <div class="player-score">{{ scores[slot.name] }}</div>
+  <div v-if="!socket">Connecting...</div>
+  <div v-else class="board-container">
+    <div class="player-container">
+      <div class="player-grid">
+        <div
+          v-for="(slot, index) in playerGridSlots"
+          :key="slot?.name ?? `empty-${index}`"
+          :class="['player-slot', `player-slot-${index + 1}`]"
+        >
+          <div v-if="slot" class="player">
+            <div class="player-name">{{ slot.name }}</div>
+            <div class="player-score">{{ scores[slot.name] }}</div>
+          </div>
         </div>
       </div>
+      <div class="player-controls">
+        <button class="leave-room-btn" @click="handleTopAction">
+          {{ !gameOn ? "Exit game" : "Leave room" }}
+        </button>
+      </div>
     </div>
-    <div class="player-controls">
-      <button class="leave-room-btn" @click="handleTopAction">
-        {{ !gameOn ? "Exit game" : "Leave room" }}
-      </button>
-    </div>
-  </div>
 
-  <div class="board">
-    <div v-for="(row, rowIndex) in board" :key="rowIndex" class="row">
+    <div class="board">
+      <div v-for="(row, rowIndex) in board" :key="rowIndex" class="row">
+        <div
+          v-for="(cell, colIndex) in row"
+          :key="colIndex"
+          :class="[
+            'cell',
+            cell.text,
+            isDropTarget(rowIndex, colIndex) ? 'drop-target' : '',
+          ]"
+          :data-row-index="rowIndex"
+          :data-col-index="colIndex"
+          @dragover.prevent="handleDragOver(rowIndex, colIndex)"
+          @drop="handleDrop($event, rowIndex, colIndex)"
+          @touchdrop="handleTouchDrop($event, rowIndex, colIndex)"
+        >
+          <!-- {{ getCellText(cell) }} -->
+          <LetterTile
+            v-if="cell.letter != null"
+            :id="cell.id"
+            :letter="cell.letter"
+            :points="cell.points"
+            :confirmed="cell.confirmed"
+            :lastPacked="lastPackedids.includes(cell.id)"
+            :isOnBoard="true"
+          />
+          <span v-else>{{ getCellText(cell.text) }}</span>
+        </div>
+      </div>
+    </div>
+    <transition name="fade">
       <div
-        v-for="(cell, colIndex) in row"
-        :key="colIndex"
-        :class="[
-          'cell',
-          cell.text,
-          isDropTarget(rowIndex, colIndex) ? 'drop-target' : '',
-        ]"
-        :data-row-index="rowIndex"
-        :data-col-index="colIndex"
-        @dragover.prevent="handleDragOver(rowIndex, colIndex)"
-        @drop="handleDrop($event, rowIndex, colIndex)"
-        @touchdrop="handleTouchDrop($event, rowIndex, colIndex)"
+        v-if="wildModal.visible"
+        class="wild-letter-overlay"
+        @click.self="closeWildModal"
       >
-        <!-- {{ getCellText(cell) }} -->
-        <LetterTile
-          v-if="cell.letter != null"
-          :id="cell.id"
-          :letter="cell.letter"
-          :points="cell.points"
-          :confirmed="cell.confirmed"
-          :lastPacked="lastPackedids.includes(cell.id)"
-          :isOnBoard="true"
-        />
-        <span v-else>{{ getCellText(cell.text) }}</span>
-      </div>
-    </div>
-  </div>
-  <transition name="fade">
-    <div
-      v-if="wildModal.visible"
-      class="wild-letter-overlay"
-      @click.self="closeWildModal"
-    >
-      <div class="wild-letter-modal" role="dialog" aria-modal="true">
-        <h3>Place the empty tile</h3>
-        <p class="wild-letter-subtitle">
-          Pick the letter(s) the wild card should act as.
-        </p>
-        <input
-          class="wild-letter-input"
-          v-model="wildModal.inputValue"
-          placeholder=""
-          maxlength="2"
-          @keyup.enter="confirmWildLetter"
-          @keyup.esc="closeWildModal"
-          autocomplete="off"
-          autocapitalize="characters"
-          ref="wildInput"
-        />
-        <p v-if="wildModal.errorMessage" class="wild-letter-error">
-          {{ wildModal.errorMessage }}
-        </p>
-        <div class="wild-letter-actions">
-          <button class="btn btn-primary" @click="confirmWildLetter">
-            Confirm
-          </button>
-          <button class="btn btn-secondary" @click="closeWildModal">
-            Cancel
-          </button>
+        <div class="wild-letter-modal" role="dialog" aria-modal="true">
+          <h3>Place the empty tile</h3>
+          <p class="wild-letter-subtitle">
+            Pick the letter(s) the wild card should act as.
+          </p>
+          <input
+            class="wild-letter-input"
+            v-model="wildModal.inputValue"
+            placeholder=""
+            maxlength="2"
+            @keyup.enter="confirmWildLetter"
+            @keyup.esc="closeWildModal"
+            autocomplete="off"
+            autocapitalize="characters"
+            ref="wildInput"
+          />
+          <p v-if="wildModal.errorMessage" class="wild-letter-error">
+            {{ wildModal.errorMessage }}
+          </p>
+          <div class="wild-letter-actions">
+            <button class="btn btn-primary" @click="confirmWildLetter">
+              Confirm
+            </button>
+            <button class="btn btn-secondary" @click="closeWildModal">
+              Cancel
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  </transition>
+    </transition>
 
-  <transition name="fade">
-    <div
-      v-if="leaveModalVisible"
-      class="leave-room-overlay"
-      @click.self="closeLeaveModal"
-    >
-      <div class="leave-room-modal" role="dialog" aria-modal="true">
-        <h3>Leave room?</h3>
-        <p class="leave-room-message">
-          Are you sure you want to leave the room? The game will be finished.
-        </p>
-        <div class="leave-room-actions">
-          <button class="btn btn-primary" @click="confirmLeaveRoom">Yes</button>
-          <button class="btn btn-secondary" @click="closeLeaveModal">No</button>
+    <transition name="fade">
+      <div
+        v-if="leaveModalVisible"
+        class="leave-room-overlay"
+        @click.self="closeLeaveModal"
+      >
+        <div class="leave-room-modal" role="dialog" aria-modal="true">
+          <h3>Leave room?</h3>
+          <p class="leave-room-message">
+            Are you sure you want to leave the room? The game will be finished.
+          </p>
+          <div class="leave-room-actions">
+            <button class="btn btn-primary" @click="confirmLeaveRoom">
+              Yes
+            </button>
+            <button class="btn btn-secondary" @click="closeLeaveModal">
+              No
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  </transition>
+    </transition>
+  </div>
 </template>
 
 <script>
