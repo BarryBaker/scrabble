@@ -1,6 +1,6 @@
 <template>
   <div class="room-container">
-    <p v-if="emptyRooms.length>0"> Rooms</p>
+    <p v-if="emptyRooms.length > 0">Rooms</p>
     <!-- <div v-if="emptyRooms.length" class="room-header" aria-hidden="true">
       <span class="header-flag">Flag</span>
       <span class="header-name">Room Name</span>
@@ -37,7 +37,9 @@
         v-if="registered && registeredRoomId === room.roomId"
         class="btn-unjoin-inline"
         @click.stop="$emit('leave-room')"
-      >Unjoin</button>
+      >
+        Leave
+      </button>
     </div>
   </div>
 </template>
@@ -116,7 +118,7 @@
     gap: 8px;
     margin-top: 12px;
   }
- .room-container p {
+  .room-container p {
     color: #94a3b8;
     font-size: 15px;
     font-weight: 500;

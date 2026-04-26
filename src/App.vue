@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <div></div>
     <div v-if="!showGame" class="landing-page">
       <SiteHeader />
 
@@ -560,18 +561,18 @@
 
         return highestScorers;
       },
-      fetchRooms() {
-        fetch(process.env.VUE_APP_BASE_URL.replace("ws", "http") + "/rooms")
-          .then((response) => response.json())
-          .then((data) => {
-            // console.log(data);
-            this.rooms = data; // Convert rooms object to array
-            // console.log(this.rooms);
-          })
-          .catch((error) => {
-            console.error("Error fetching rooms:", error);
-          });
-      },
+      // fetchRooms() {
+      //   fetch(process.env.VUE_APP_BASE_URL.replace("ws", "http") + "/rooms")
+      //     .then((response) => response.json())
+      //     .then((data) => {
+      //       // console.log(data);
+      //       this.rooms = data; // Convert rooms object to array
+      //       // console.log(this.rooms);
+      //     })
+      //     .catch((error) => {
+      //       console.error("Error fetching rooms:", error);
+      //     });
+      // },
       startFlashingTab() {
         if (!this.flashingInterval) {
           this.flashingInterval = setInterval(() => {
@@ -724,7 +725,9 @@
       this.socket = new WebSocket(process.env.VUE_APP_BASE_URL);
       this.socket.onmessage = this.sockets.handleMessage.bind(this);
 
-      // this.socket.onopen = () => {};
+      this.socket.onopen = () => {
+        this.reconnect();
+      };
     },
     beforeUnmount() {
       this.stopFlashingTab();
