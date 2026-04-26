@@ -1,6 +1,7 @@
 <template>
   <div v-if="!socket">Connecting...</div>
-  <div v-else class="board-container">
+
+  <template v-else>
     <div class="player-container">
       <div class="player-grid">
         <div
@@ -110,7 +111,7 @@
         </div>
       </div>
     </transition>
-  </div>
+  </template>
 </template>
 
 <script>
