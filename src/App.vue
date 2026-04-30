@@ -419,22 +419,10 @@
       },
     },
     methods: {
-      connectSocket() {
-        if (
-          this.socket &&
-          (this.socket.readyState === WebSocket.OPEN ||
-            this.socket.readyState === WebSocket.CONNECTING)
-        ) {
-          return;
-        }
-
+      initSocket() {
         if (this.socket) {
-          this.socket.onopen = null;
-          this.socket.onclose = null;
-          this.socket.onerror = null;
-          this.socket.onmessage = null;
+          this.socket.close();
         }
-
         this.socket = new WebSocket(process.env.VUE_APP_BASE_URL);
         this.socketConnected = this.socket.readyState === WebSocket.OPEN;
         this.socket.onmessage = this.sockets.handleMessage.bind(this);
@@ -545,13 +533,6 @@
         );
       },
       reconnect() {
-        const isSocketOpen =
-          this.socket && this.socket.readyState === WebSocket.OPEN;
-        if (!isSocketOpen) {
-          this.connectSocket();
-          return;
-        }
-
         const storedName = sessionStorage.getItem("playerName");
         const storedRoomId = sessionStorage.getItem("roomId");
         if (storedName && storedRoomId) {
@@ -636,12 +617,26 @@
         this.flashingInterval = null;
         document.title = this.originalTitle;
       },
-      triggerWinnerCelebration() {
-        this.showCelebration = true;
-        clearTimeout(this.celebrationTimer);
-        this.celebrationTimer = setTimeout(() => {
-          this.showCelebration = false;
-        }, 2600);
+      handleVisibilityChange() {
+        if (document.visibilityState === "visible" && !this.socketConnected) {
+          this.initSocket();
+        }
+      },
+      handlePageShow(event) {
+        // Only reconnect if coming from bfcache (back/forward cache)
+        if (event.persisted && !this.socketConnected) {
+          this.initSocket();
+        }
+      },
+      handleFocus() {
+        if (!this.socketConnected) {
+          this.initSocket();
+        }
+      },
+      handleOnline() {
+        if (!this.socketConnected) {
+          this.initSocket();
+        }
       },
     },
     sockets: {
@@ -745,11 +740,6 @@
       },
     },
     watch: {
-      socketConnected(newValue, oldValue) {
-        if (oldValue && !newValue) {
-          this.reconnect();
-        }
-      },
       rooms(newRooms) {
         // Check if rooms array is non-empty, and no room is selected yet
         if (newRooms.length > 0 && this.selectedRoom === null) {
@@ -775,11 +765,18 @@
       },
     },
     created() {
-      this.connectSocket();
+      this.initSocket();
     },
     beforeUnmount() {
       this.stopFlashingTab();
       clearTimeout(this.celebrationTimer);
+      document.removeEventListener(
+        "visibilitychange",
+        this.handleVisibilityChange,
+      );
+      window.removeEventListener("pageshow", this.handlePageShow);
+      window.removeEventListener("focus", this.handleFocus);
+      window.removeEventListener("online", this.handleOnline);
       if (this.socket) {
         this.socket.onopen = null;
         this.socket.onclose = null;
@@ -788,6 +785,13 @@
       }
     },
     mounted() {
+      document.addEventListener(
+        "visibilitychange",
+        this.handleVisibilityChange,
+      );
+      window.addEventListener("pageshow", this.handlePageShow);
+      window.addEventListener("focus", this.handleFocus);
+      window.addEventListener("online", this.handleOnline);
       // this.fetchRooms();
     },
   };
